@@ -81,17 +81,18 @@ class User:
         print('-> %s' % self.cfg['name'])
         sys.stdout.flush()
 
-        if 'nma_key' in self.cfg:
-            self.nma.push('MinecraftServer', title + ': ' + message)
+        for method in self.cfg['notify_with']:
+            if method == 'nma' and 'nma_key' in self.cfg:
+                self.nma.push('MinecraftServer', title + ': ' + message)
 
-        elif 'pushbullet_token' in self.cfg:
-            self.sendPushbullet(title, message)
+            elif method == 'pushbullet' and 'pushbullet_token' in self.cfg:
+                self.sendPushbullet(title, message)
 
-        elif 'pushover_token' in self.cfg:
-            self.sendPushover(title, message)
+            elif method == 'pushover' and 'pushover_token' in self.cfg:
+                self.sendPushover(title, message)
 
-        elif 'telegram_chat_id' in self.cfg and tgbot is not None:
-            tgbot.sendMessage(chat_id=self.cfg['telegram_chat_id'], text="{}: {}".format(title, message))
+            elif method == 'telegram' and 'telegram_chat_id' in self.cfg and tgbot is not None:
+                tgbot.sendMessage(chat_id=self.cfg['telegram_chat_id'], text="{}: {}".format(title, message))
 
 
     def handleEvent(self, new_user, server_name, event_name, check_field):

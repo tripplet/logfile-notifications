@@ -18,6 +18,7 @@ users:
     pushover_key: key here
     pushover_token: token
     telegram_chat_id: chatidhere
+    #notify_with: [pushover, pushbullet, nma, telegram]
     #pushbullet_token: put token here
     #pushbullet_device: can be empty to send notification to all devices
     #nma_key: nmakey here
