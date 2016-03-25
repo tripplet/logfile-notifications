@@ -1,0 +1,24 @@
+# Remember to restart the service after changing the config file
+
+telegram_bot_token: accesstoken
+
+server_logs:
+  - name: Server 1
+    file: /complete/path/to/log/file.log
+
+  - name: Server 2
+    file: /another/path/to/log/file.log
+
+users:
+  - name: username
+    enabled: true
+    login_msg: true
+    logout_msg: true
+    search: HaloScorpio
+    pushover_key: key here
+    pushover_token: token
+    telegram_chat_id: chatidhere
+    #pushbullet_token: put token here
+    #pushbullet_device: can be empty to send notification to all devices
+    #nma_key: nmakey here
+
