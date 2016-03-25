@@ -33,7 +33,7 @@ user_logout_string = re.compile('\[[\d:]+\]\s\[[\w\s\/]+\]:\s([\w]+) left the ga
 
 
 if 'telegram_bot_token' in config:
-    import telegram # pip install python-telegram-bot
+    from MinecraftBot import MinecraftBot
 
 
 def main():
@@ -46,10 +46,7 @@ def main():
         users.append(User(user))
 
     if 'telegram_bot_token' in config:
-        try:
-            tgbot = telegram.Bot(token=config['telegram_bot_token'])
-        except Exception as exp:
-            print('Error creating telegram bot')
+        tgbot = MinecraftBot(config, users)
 
     # create inotify listener
     wm = pyinotify.WatchManager()
@@ -69,6 +66,7 @@ class User:
     def __init__(self, user_config):
         self.cfg = user_config
         self.online = False
+        self.last_seen = None
 
         if 'nma_key' in self.cfg:
             self.nma = pynma.PyNMA([self.cfg['nma_key']])
@@ -92,7 +90,7 @@ class User:
                 self.sendPushover(title, message)
 
             elif method == 'telegram' and 'telegram_chat_id' in self.cfg and tgbot is not None:
-                tgbot.sendMessage(chat_id=self.cfg['telegram_chat_id'], text="{}: {}".format(title, message))
+                tgbot.bot.sendMessage(chat_id=self.cfg['telegram_chat_id'], text="{}: {}".format(title, message))
 
 
     def handleEvent(self, new_user, server_name, event_name, check_field):
@@ -107,6 +105,7 @@ class User:
                 thr = threading.Thread(target=self.push, args=(title, new_user), kwargs={})
                 thr.start()
         else:
+            self.last_seen = datetime.now()
             if event_name == 'Login':
                 self.online = True
             elif event_name == 'Logout':
