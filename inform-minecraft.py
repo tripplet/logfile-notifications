@@ -90,7 +90,7 @@ class User:
                 self.sendPushover(title, message)
 
             elif method == 'telegram' and 'telegram_chat_id' in self.cfg and tgbot is not None:
-                tgbot.bot.sendMessage(chat_id=self.cfg['telegram_chat_id'], text="{}: {}".format(title, message))
+                tgbot.sendMessage(chat_id=self.cfg['telegram_chat_id'], text="{}: {}".format(title, message))
 
 
     def handleEvent(self, new_user, server_name, event_name, check_field):
