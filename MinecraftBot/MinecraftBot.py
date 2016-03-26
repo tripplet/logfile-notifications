@@ -2,7 +2,6 @@
 
 from datetime import datetime
 
-import yaml
 import telegram # pip install python-telegram-bot
 from telegram.ext import Updater
 
@@ -12,8 +11,9 @@ logging.basicConfig(level=logging.ERROR,
 
 
 class MinecraftBot(object):
-    _handle_response = None
-    messages = 0
+    _handle_response = None # Function responsible for handling a response from the user
+
+    messages = 0 # Number of messages processed
 
     reply_quiet = telegram.ReplyKeyboardMarkup([['4 Stunden', 'Bis Morgen'], ['Bis Heute Abend', 'RuheModus beenden']],
                                                 resize_keyboard=True,
@@ -62,7 +62,7 @@ class MinecraftBot(object):
         authorized_user = [user["telegram_chat_id"] for user in self.cfg["users"] if "telegram_chat_id" in user]
 
         if not update.message.chat_id in authorized_user:
-            self.sendMessage(update.message.chat_id, text='Not authorized: %d' % update.message.chat_id)
+            self.sendMessage(update.message.chat_id, text='Unauthorized: %d' % update.message.chat_id)
             return False
 
         # Received a valid message from an authorized user
@@ -74,7 +74,7 @@ class MinecraftBot(object):
         if not self.is_authorized(bot, update): return
 
         self.sendMessage(update.message.chat_id,
-                        text='Gestarted: {}\nNachrichten verarbeitet: {}'.format(self.started, self.messages))
+                        text='Am Leben seit: {}\nNachrichten verarbeitet: {}'.format(self.started, self.messages))
 
 
     def cmd_settings(self, bot, update):
@@ -137,7 +137,8 @@ class MinecraftBot(object):
                 self._handle_response = None
 
             else:
-                self.sendMessage(update.message.chat_id, text='Nochaml', reply_markup=self.reply_quiet)
+                self.sendMessage(update.message.chat_id, text='Bitte wähle eine der folgenden Möglichkeiten',
+                                 reply_markup=self.reply_quiet)
 
         self._handle_response = quiet_response
 
