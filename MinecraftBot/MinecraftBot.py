@@ -12,7 +12,12 @@ logging.basicConfig(level=logging.ERROR,
 
 
 class MinecraftBot(object):
+    _handle_response = None
     messages = 0
+
+    reply_quiet = telegram.ReplyKeyboardMarkup([['4 Stunden', 'Bis Morgen'], ['Bis Heute Abend', 'RuheModus beenden']],
+                                                resize_keyboard=True,
+                                                one_time_keyboard=True)
 
     def __init__(self, config, users):
         try:
@@ -30,8 +35,9 @@ class MinecraftBot(object):
             self.dispatcher.addErrorHandler(self.bot_error)
 
             # add commands
-            self.dispatcher.addTelegramMessageHandler(self.help)
+            self.dispatcher.addTelegramMessageHandler(self.rx_message)
             self.dispatcher.addTelegramCommandHandler("info", self.cmd_info)
+            self.dispatcher.addTelegramCommandHandler("cancel", self.cmd_cancel)
             self.dispatcher.addTelegramCommandHandler("status", self.cmd_status)
             self.dispatcher.addTelegramCommandHandler("settings", self.cmd_settings)
             self.dispatcher.addTelegramCommandHandler("quiet", self.cmd_quiet)
@@ -94,7 +100,48 @@ class MinecraftBot(object):
     def cmd_quiet(self, bot, update):
         if not self.is_authorized(bot, update): return
 
-        self.sendMessage(update.message.chat_id, text='Not implemented yet...')
+        self.sendMessage(update.message.chat_id, text='Wie lange?', reply_markup=self.reply_quiet)
+
+
+        def quiet_response(self, update):
+            if update.message.text == '4 Stunden':
+                self.sendMessage(update.message.chat_id, text='OK1', reply_markup=telegram.ReplyKeyboardHide())
+                self._handle_response = None
+
+            elif update.message.text == 'Bis Morgen':
+                self.sendMessage(update.message.chat_id, text='OK2', reply_markup=telegram.ReplyKeyboardHide())
+                self._handle_response = None
+
+            elif update.message.text == 'Bis Heute Abend':
+                self.sendMessage(update.message.chat_id, text='OK3', reply_markup=telegram.ReplyKeyboardHide())
+                self._handle_response = None
+
+            elif update.message.text == 'RuheModus beenden':
+                self.sendMessage(update.message.chat_id, text='OK4', reply_markup=telegram.ReplyKeyboardHide())
+                self._handle_response = None
+
+            else:
+                self.sendMessage(update.message.chat_id, text='Nochaml', reply_markup=self.reply_quiet)
+
+
+        self._handle_response = quiet_response
+
+
+    def cmd_cancel(self, bot, update):
+        if not self.is_authorized(bot, update): return
+
+        self.sendMessage(update.message.chat_id, text='Abgebrochen', reply_markup=telegram.ReplyKeyboardHide())
+        self._handle_response = None
+
+
+    def rx_message(self, bot, update):
+        if not self.is_authorized(bot, update): return
+
+        # Not expecting a response
+        if self._handle_response is None:
+            self.help(bot, update)
+        else:
+            self._handle_response(self, update)
 
 
     def help(self, bot, update):
