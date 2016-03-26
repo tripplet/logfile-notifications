@@ -92,9 +92,10 @@ class MinecraftBot(object):
 
         response = ''
         for user in self.users:
-            response += '{}: {}\n'.format(user.cfg['name'], user.online)
+            if user.cfg['enabled']:
+                response += '{}: {}\n'.format(user.cfg['name'], 'Online' if user.online else 'Offline')
 
-        self.sendMessage(update.message.chat_id,text = response)
+        self.sendMessage(update.message.chat_id, text = response)
 
 
     def cmd_quiet(self, bot, update):
