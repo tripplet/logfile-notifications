@@ -8,13 +8,14 @@ from telegram.ext import Updater
 
 
 class MinecraftBot(object):
+    messages = 0
+
     def __init__(self, config, users):
         try:
             self.cfg = config
             self.users = users
 
             self.started = datetime.now()
-            self.messages = 0
 
             self.bot = telegram.Bot(token=self.cfg['telegram_bot_token'])
             self.updater = Updater(bot=self.bot)
@@ -42,8 +43,8 @@ class MinecraftBot(object):
             print('Error creating telegram bot')
 
 
-    def sendMessage(self, chat_id, text):
-        self.bot.sendMessage(chat_id=chat_id, text=text)
+    def sendMessage(self, chat_id, text, **args):
+        self.bot.sendMessage(chat_id=chat_id, text=text, **args)
         self.messages += 1
 
 
@@ -51,9 +52,10 @@ class MinecraftBot(object):
         authorized_user = [user["telegram_chat_id"] for user in self.cfg["users"] if "telegram_chat_id" in user]
 
         if not update.message.chat_id in authorized_user:
-            bot.sendMessage(update.message.chat_id, text='Not authorized: %d' % update.message.chat_id)
+            self.sendMessage(update.message.chat_id, text='Not authorized: %d' % update.message.chat_id)
             return False
 
+        # Received a valid message from an authorized user
         self.messages += 1
         return True
 
@@ -67,13 +69,11 @@ class MinecraftBot(object):
 
     def cmd_settings(self, bot, update):
         if not self.is_authorized(bot, update): return
-
         self.sendMessage(update.message.chat_id, text='Not implemented yet...')
 
 
     def cmd_broadcast(self, bot, update):
         if not self.is_authorized(bot, update): return
-
         self.sendMessage(update.message.chat_id, text='Not implemented yet...')
 
 
@@ -97,12 +97,14 @@ class MinecraftBot(object):
         if not self.is_authorized(bot, update): return
 
         self.sendMessage(update.message.chat_id, text='Hi, meine Kommands:\n'
-                                                     '/info - Bot Info & Statistik\n'
-                                                     '/status - Status\n'
-                                                     '/quiet - Ich will meine Ruhe\n'
-                                                     '/settings - Einstellungen\n'
-                                                     '/broadcast - Nachricht an alle\n'
-                                                     '/help - Zeige diese Hilfe')
+                                                      '/info - Bot Info & Statistik\n'
+                                                      '/status - Status\n'
+                                                      '/quiet - Ich will meine Ruhe\n'
+                                                      '/settings - Einstellungen\n'
+                                                      '/broadcast - Nachricht an alle\n'
+                                                      '/help - Zeige diese Hilfe\n'
+                                                      '/cancel - Aktuelle Aktion abbrechen',
+                         reply_markup=telegram.ReplyKeyboardHide())
 
 
     def bot_error(self, bot, update, error):
