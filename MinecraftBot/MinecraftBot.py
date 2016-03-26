@@ -84,7 +84,22 @@ class MinecraftBot(object):
 
     def cmd_broadcast(self, bot, update):
         if not self.is_authorized(bot, update): return
-        self.sendMessage(update.message.chat_id, text='Not implemented yet...')
+
+        # Text after /broadcast
+        msg = update.message.text[10:]
+
+        self.sendMessage(update.message.chat_id, text='Was möchtest du allen schreiben?\nNutze /cancel zum Abbrechen',
+                         reply_markup=telegram.ForceReply())
+
+        # Function handling the response
+        def broadcast_response(self, update):
+            for user in self.users:
+                user.push('Broadcast', update.message.text, ignore_online=True)
+
+            self.sendMessage(update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
+            self._handle_response = None
+
+        self._handle_response = broadcast_response
 
 
     def cmd_status(self, bot, update):

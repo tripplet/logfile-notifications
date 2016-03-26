@@ -72,8 +72,8 @@ class User:
             self.nma = pynma.PyNMA([self.cfg['nma_key']])
 
 
-    def push(self, title, message):
-        if not self.cfg['enabled'] or self.online:
+    def push(self, title, message, ignore_online=False):
+        if not self.cfg['enabled'] or (self.online and not ignore_online):
             return
 
         print('-> %s' % self.cfg['name'])
