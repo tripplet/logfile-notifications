@@ -6,6 +6,10 @@ import yaml
 import telegram # pip install python-telegram-bot
 from telegram.ext import Updater
 
+import logging
+logging.basicConfig(level=logging.ERROR,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 
 class MinecraftBot(object):
     messages = 0
