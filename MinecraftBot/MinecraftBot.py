@@ -101,9 +101,9 @@ class MinecraftBot(object):
     def cmd_quiet(self, bot, update):
         if not self.is_authorized(bot, update): return
 
-        self.sendMessage(update.message.chat_id, text='Wie lange?', reply_markup=self.reply_quiet)
+        self.sendMessage(update.message.chat_id, text='Wie lange?\nNutze /cancel zum Abbrechen', reply_markup=self.reply_quiet)
 
-
+        # Function handling the response
         def quiet_response(self, update):
             if update.message.text == '4 Stunden':
                 self.sendMessage(update.message.chat_id, text='OK1', reply_markup=telegram.ReplyKeyboardHide())
@@ -123,7 +123,6 @@ class MinecraftBot(object):
 
             else:
                 self.sendMessage(update.message.chat_id, text='Nochaml', reply_markup=self.reply_quiet)
-
 
         self._handle_response = quiet_response
 
@@ -154,7 +153,7 @@ class MinecraftBot(object):
                                                       '/quiet - Ich will meine Ruhe\n'
                                                       '/settings - Einstellungen\n'
                                                       '/broadcast - Nachricht an alle\n'
-                                                      '/help - Zeige diese Hilfe\n'
+                                                      '/help - Zeigt die Hilfe\n'
                                                       '/cancel - Aktuelle Aktion abbrechen',
                          reply_markup=telegram.ReplyKeyboardHide())
 
