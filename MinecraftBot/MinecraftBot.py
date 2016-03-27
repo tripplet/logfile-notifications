@@ -81,6 +81,19 @@ class MinecraftBot:
             return date.strftime('%a %-d. %b - %H:%M')
 
 
+    @staticmethod
+    def getVersion():
+        try:
+            import subprocess
+            import os
+            import inspect
+
+            cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+            return subprocess.check_output(['git', 'describe', '--long', '--always'], cwd=cwd).decode('utf8').strip()
+        except Exception:
+            return '?'
+
+
     def sendMessage(self, chat_id, text, **args):
         self.bot.sendMessage(chat_id=chat_id, text=text, **args)
         self._messages += 1
@@ -114,11 +127,11 @@ class MinecraftBot:
 
     def cmd_info(self, bot, update):
         if not self.is_authorized(bot, update): return
-
         self.sendMessage(update.message.chat_id,
-                         text='Am Leben seit: {}\n'
+                         text='Version: {}\n'
+                              'Am Leben seit: {}\n'
                               'Nachrichten verarbeitet: {}'
-                         .format(MinecraftBot.formatDate(self.started), self._messages))
+                         .format(MinecraftBot.getVersion(), MinecraftBot.formatDate(self.started), self._messages))
 
 
     def cmd_settings(self, bot, update):
