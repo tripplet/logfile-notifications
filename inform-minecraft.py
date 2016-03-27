@@ -63,10 +63,11 @@ def main():
 
 
 class User:
+    online = False
+    last_seen = None
+
     def __init__(self, user_config):
         self.cfg = user_config
-        self.online = False
-        self.last_seen = None
 
         if 'nma_key' in self.cfg:
             self.nma = pynma.PyNMA([self.cfg['nma_key']])

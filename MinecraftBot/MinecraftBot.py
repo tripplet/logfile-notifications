@@ -10,10 +10,11 @@ logging.basicConfig(level=logging.ERROR,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
-class MinecraftBot(object):
-    _handle_response = None # Function responsible for handling a response from the user
+class MinecraftBot:
 
-    messages = 0 # Number of messages processed
+    _handle_response = None # Function responsible for handling a response from the user
+    _messages = 0 # Number of messages processed
+
 
     reply_quiet = telegram.ReplyKeyboardMarkup([['4 Stunden', 'Bis Morgen'], ['Bis Heute Abend', 'RuheModus beenden']],
                                                 resize_keyboard=True,
@@ -55,18 +56,18 @@ class MinecraftBot(object):
 
     def sendMessage(self, chat_id, text, **args):
         self.bot.sendMessage(chat_id=chat_id, text=text, **args)
-        self.messages += 1
+        self._messages += 1
 
 
     def is_authorized(self, bot, update):
-        authorized_user = [user["telegram_chat_id"] for user in self.cfg["users"] if "telegram_chat_id" in user]
+        authorized_user = [user.cfg["telegram_chat_id"] for user in self.users if "telegram_chat_id" in user.cfg]
 
         if not update.message.chat_id in authorized_user:
             self.sendMessage(update.message.chat_id, text='Unauthorized: %d' % update.message.chat_id)
             return False
 
         # Received a valid message from an authorized user
-        self.messages += 1
+        self._messages += 1
         return True
 
 
@@ -74,7 +75,7 @@ class MinecraftBot(object):
         if not self.is_authorized(bot, update): return
 
         self.sendMessage(update.message.chat_id,
-                        text='Am Leben seit: {}\nNachrichten verarbeitet: {}'.format(self.started, self.messages))
+                         text='Am Leben seit: {}\nNachrichten verarbeitet: {}'.format(self.started, self._messages))
 
 
     def cmd_settings(self, bot, update):
@@ -116,7 +117,7 @@ class MinecraftBot(object):
     def cmd_quiet(self, bot, update):
         if not self.is_authorized(bot, update): return
 
-        self.sendMessage(update.message.chat_id, text='Wie lange?\nNutze /cancel zum Abbrechen', reply_markup=self.reply_quiet)
+        self.sendMessage(update.message.chat_id, text='Wie lange?\nNutze /cancel zum Abbrechen', reply_markup=self._reply_quiet)
 
         # Function handling the response
         def quiet_response(self, update):
