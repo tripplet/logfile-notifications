@@ -11,7 +11,14 @@ logging.basicConfig(level=logging.ERROR,
 
 # German time formating
 import locale
-locale.setlocale(locale.LC_TIME, 'de_DE')
+try:
+    locale.setlocale(locale.LC_TIME, 'de_DE')
+except Exception as exp:
+    try:
+        locale.setlocale(locale.LC_TIME, 'de_DE.utf8')
+    except Exception as exp:
+        pass
+
 
 class MinecraftBot:
 
