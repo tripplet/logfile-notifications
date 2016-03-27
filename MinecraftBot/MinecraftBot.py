@@ -55,15 +55,16 @@ class MinecraftBot:
 
             # add commands
             self.dispatcher.addTelegramMessageHandler(self.rx_message)
+            self.dispatcher.addTelegramCommandHandler("start", self.cmd_start)
             self.dispatcher.addTelegramCommandHandler("info", self.cmd_info)
             self.dispatcher.addTelegramCommandHandler("cancel", self.cmd_cancel)
             self.dispatcher.addTelegramCommandHandler("status", self.cmd_status)
             self.dispatcher.addTelegramCommandHandler("settings", self.cmd_settings)
             self.dispatcher.addTelegramCommandHandler("quiet", self.cmd_quiet)
             self.dispatcher.addTelegramCommandHandler("broadcast", self.cmd_broadcast)
-            self.dispatcher.addTelegramCommandHandler("help", self.help)
+            self.dispatcher.addTelegramCommandHandler("help", self.cmd_help)
 
-            self.dispatcher.addUnknownTelegramCommandHandler(self.help)
+            self.dispatcher.addUnknownTelegramCommandHandler(self.cmd_help)
 
             # Start the Bot
             self.updater.start_polling(clean=True, timeout=30)
@@ -104,6 +105,11 @@ class MinecraftBot:
 
         # set quiet time of user
         return found_user[0]
+
+
+    def cmd_start(self, bot, update):
+        if not self.is_authorized(bot, update): return
+        self.cmd_help(bot, update)
 
 
     def cmd_info(self, bot, update):
@@ -185,13 +191,11 @@ class MinecraftBot:
         if not self.is_authorized(bot, update): return
 
         # Not expecting a response
-        if self._handle_response is None:
-            self.help(bot, update)
-        else:
+        if not self._handle_response is None:
             self._handle_response(self, update)
 
 
-    def help(self, bot, update):
+    def cmd_help(self, bot, update):
         if not self.is_authorized(bot, update): return
 
         self.sendMessage(update.message.chat_id, text='Hi, meine Kommands:\n'
