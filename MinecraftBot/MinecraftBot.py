@@ -10,6 +10,9 @@ import logging
 logging.basicConfig(level=logging.ERROR,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+# German time formating
+import locale
+locale.setlocale(locale.LC_TIME, 'de_DE')
 
 class MinecraftBot:
 
@@ -62,6 +65,14 @@ class MinecraftBot:
         except Exception as exp:
             print('Error creating telegram bot')
 
+    @staticmethod
+    def formatDate(date):
+        if date is None:
+            return 'Unbekannt'
+        else:
+            return date.strftime('%a %-d. %b - %H:%M')
+
+
 
     def sendMessage(self, chat_id, text, **args):
         self.bot.sendMessage(chat_id=chat_id, text=text, **args)
@@ -84,7 +95,9 @@ class MinecraftBot:
         if not self.is_authorized(bot, update): return
 
         self.sendMessage(update.message.chat_id,
-                         text='Am Leben seit: {}\nNachrichten verarbeitet: {}'.format(self.started, self._messages))
+                         text='Am Leben seit: {}\n'
+                              'Nachrichten verarbeitet: {}'
+                         .format(MinecraftBot.formatDate(self.started), self._messages))
 
 
     def cmd_settings(self, bot, update):
@@ -118,7 +131,9 @@ class MinecraftBot:
         response = ''
         for user in self.users:
             if user.cfg['enabled']:
-                response += '{}: {}\n'.format(user.cfg['name'], 'Online' if user.online else 'Offline (Zuletzt online ' + str(user.last_seen) + ')')
+                response += '{}: {}\n'.format(user.cfg['name'],
+                                            'Online' if user.online else
+                                            'Offline (Zuletzt online ' + MinecraftBot.formatDate(user.last_seen) + ')')
 
         self.sendMessage(update.message.chat_id, text = response)
 
