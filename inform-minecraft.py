@@ -65,6 +65,7 @@ def main():
 class User:
     online = False
     last_seen = None
+    quiet_until = None
 
     def __init__(self, user_config):
         self.cfg = user_config
@@ -75,6 +76,9 @@ class User:
 
     def push(self, title, message, ignore_online=False):
         if not self.cfg['enabled'] or (self.online and not ignore_online):
+            return
+
+        if self.quiet_until is not None and self.quiet_until > datetime.now():
             return
 
         print('-> %s' % self.cfg['name'])
