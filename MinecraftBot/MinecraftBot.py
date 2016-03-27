@@ -118,7 +118,7 @@ class MinecraftBot:
         response = ''
         for user in self.users:
             if user.cfg['enabled']:
-                response += '{}: {}\n'.format(user.cfg['name'], 'Online' if user.online else 'Offline')
+                response += '{}: {}\n'.format(user.cfg['name'], 'Online' if user.online else 'Offline (Zuletzt online ' + str(user.last_seen) + ')')
 
         self.sendMessage(update.message.chat_id, text = response)
 
