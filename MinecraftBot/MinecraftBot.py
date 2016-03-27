@@ -64,13 +64,13 @@ class MinecraftBot:
         except Exception as exp:
             print('Error creating telegram bot')
 
+
     @staticmethod
     def formatDate(date):
         if date is None:
             return 'Unbekannt'
         else:
             return date.strftime('%a %-d. %b - %H:%M')
-
 
 
     def sendMessage(self, chat_id, text, **args):
