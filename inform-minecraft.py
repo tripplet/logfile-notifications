@@ -4,6 +4,7 @@ import re
 import sys
 import os
 import json
+import pprint
 
 from datetime import datetime
 import http.client
@@ -138,6 +139,15 @@ class User:
             'sound': 'none'}),
             {'Content-type': 'application/x-www-form-urlencoded'})
 
+    def __str__(self):
+        ret = pprint.pformat(self.cfg, indent=4)
+        ret += '\n' \
+               'last_seen: {}\n' \
+               'quiet_until: {}\n' \
+               'online: {}'.format(MinecraftBot.formatDate(self.last_seen),
+                                   MinecraftBot.formatDate(self.quiet_until),
+                                   self.online)
+        return ret
 
 class ServerLogFile:
     def __init__(self, log_file):

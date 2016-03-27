@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from datetime import datetime, timedelta
-from collections import OrderedDict
 
 import telegram # pip install python-telegram-bot
 from telegram.ext import Updater
@@ -19,16 +18,16 @@ class MinecraftBot:
     _handle_response = None # Function responsible for handling a response from the user
     _messages = 0 # Number of messages processed
 
-    _quiet_times = OrderedDict({
+    _quiet_times = {
         '4 Stunden':         lambda: datetime.now() + timedelta(hours=4),
         'Bis Morgen':        lambda: (datetime.now() + timedelta(days=1))
                                       .replace(hour=6, minute=0, second=0, microsecond=0),
         'Bis Heute Abend':   lambda: datetime.now().replace(hour=20, minute=0, second=0, microsecond=0),
         'RuheModus beenden': lambda: None
-    })
+    }
 
-    _reply_quiet = telegram.ReplyKeyboardMarkup([[list(_quiet_times.keys())[0], list(_quiet_times.keys())[1]],
-                                                 [list(_quiet_times.keys())[2], list(_quiet_times.keys())[3]]],
+    _reply_quiet = telegram.ReplyKeyboardMarkup([['4 Stunden', 'Bis Morgen'],
+                                                 ['Bis Heute Abend', 'RuheModus beenden']],
                                                 resize_keyboard=True,
                                                 one_time_keyboard=True)
 
@@ -91,6 +90,15 @@ class MinecraftBot:
         return True
 
 
+    def _findUserById(self, id):
+        # find user with the current chat id
+        found_user = [user for user in self.users if "telegram_chat_id" in user.cfg and
+                      user.cfg["telegram_chat_id"] == id]
+
+        # set quiet time of user
+        return found_user[0]
+
+
     def cmd_info(self, bot, update):
         if not self.is_authorized(bot, update): return
 
@@ -102,7 +110,7 @@ class MinecraftBot:
 
     def cmd_settings(self, bot, update):
         if not self.is_authorized(bot, update): return
-        self.sendMessage(update.message.chat_id, text='Not implemented yet...')
+        self.sendMessage(update.message.chat_id, text=str(self._findUserById(update.message.chat_id)))
 
 
     def cmd_broadcast(self, bot, update):
@@ -147,11 +155,7 @@ class MinecraftBot:
         def quiet_response(self, update):
             if update.message.text in self._quiet_times:
                 # find user with the current chat id
-                found_user = [user for user in self.users if "telegram_chat_id" in user.cfg and
-                                                              user.cfg["telegram_chat_id"] == update.message.chat_id]
-
-                # set quiet time of user
-                found_user[0].quiet_until = self._quiet_times[update.message.text]()
+                self._findUserById(update.message.chat_id).quiet_until = self._quiet_times[update.message.text]()
 
                 self.sendMessage(update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
                 self._handle_response = None
