@@ -44,6 +44,7 @@ class MinecraftBot:
             self.users = users
 
             self.started = datetime.now()
+            self.version = MinecraftBot.getVersion()
 
             self.bot = telegram.Bot(token=self.cfg['telegram_bot_token'])
             self.updater = Updater(bot=self.bot)
@@ -131,7 +132,7 @@ class MinecraftBot:
                          text='Version: {}\n'
                               'Am Leben seit: {}\n'
                               'Nachrichten verarbeitet: {}'
-                         .format(MinecraftBot.getVersion(), MinecraftBot.formatDate(self.started), self._messages))
+                         .format(self.version, MinecraftBot.formatDate(self.started), self._messages))
 
 
     def cmd_settings(self, bot, update):
