@@ -1,0 +1,4 @@
+future>=0.15.2
+PyNMA>=1.0
+python-telegram-bot>=3.4
+PyYAML>=3.11
