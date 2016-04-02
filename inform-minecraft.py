@@ -131,7 +131,7 @@ class User:
                     title = event_name
 
                     # Delay offline event or 30 seconds
-                    event = self.offline_events.enter(30, 1, self.push, (title, new_user))
+                    event = scheduler.enter(30, 1, self.push, (title, new_user))
                     self.offline_events[new_user] = event
 
         else:
