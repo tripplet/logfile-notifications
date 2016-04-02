@@ -93,12 +93,12 @@ class MinecraftBot:
             cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
             
             # try .version file
-            version_file = os.path.join(cwd, '.version'))
+            version_file = os.path.join(cwd, '.version')
             if os.path.exists(version_file):
                 with open(version_file) as f:
                     version = f.read()
                     return version
-            else
+            else:
                 # try with git
                 return subprocess.check_output(['git', 'describe', '--long', '--always'], cwd=cwd).decode('utf8').strip()
         except Exception:
