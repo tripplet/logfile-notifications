@@ -3,13 +3,13 @@
 import re
 import sys
 import os
-import json
 import pprint
-
-from datetime import datetime
 import http.client
 import urllib.parse
 import threading
+import sched
+import time
+from datetime import datetime
 
 import pyinotify # pip install pyinotify
 import pynma
@@ -25,6 +25,7 @@ config_path = sys.argv[1]
 users = []
 server_logs = dict()
 tgbot = None
+scheduler = sched.scheduler(time.time, time.sleep)
 
 with open(sys.argv[1]) as fp:
     config = yaml.load(fp)
@@ -58,15 +59,27 @@ def main():
         server_logs[slf.file] = slf
         server_logs[slf.file].add_watch(wm)
 
-    # start infinite loop
     print('Logfile monitoring running')
+
+    # start scheduler loop
+    t = threading.Thread(target=scheduler_loop, args=(scheduler,))
+    t.start()
+
+    # start file notification loop
     notifier.loop()
+
+
+def scheduler_loop(scheduler):
+    while True:
+        scheduler.run()
 
 
 class User:
     online = False
     last_seen = None
     quiet_until = None
+    offline_events = dict()
+
 
     def __init__(self, user_config):
         self.cfg = user_config
@@ -104,12 +117,23 @@ class User:
             if self.cfg[check_field]:
 
                 if event_name == 'Login':
+                    # Cancel offline event for new_user
+                    # And don't send online event
+                    if new_user in self.offline_events:
+                        scheduler.cancel(self.offline_events.pop(new_user))
+                        return
+
                     title = 'Login ({})'.format(server_name)
+                    thr = threading.Thread(target=self.push, args=(title, new_user), kwargs={})
+                    thr.start()
+
                 else:
                     title = event_name
 
-                thr = threading.Thread(target=self.push, args=(title, new_user), kwargs={})
-                thr.start()
+                    # Delay offline event or 30 seconds
+                    event = self.offline_events.enter(30, 1, self.push, (title, new_user))
+                    self.offline_events[new_user] = event
+
         else:
             self.last_seen = datetime.now()
             if event_name == 'Login':
