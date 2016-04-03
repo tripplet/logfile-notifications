@@ -2,6 +2,25 @@ import os
 import pyinotify
 
 
+class EventHandler(pyinotify.ProcessEvent):
+    monitor = None
+
+    def __init__(self, *args, **kwargs):
+        super(EventHandler, self).__init__(*args, **kwargs)
+
+    def process_IN_MODIFY(self, event):
+        if event.pathname not in EventHandler.monitor.server_logs:
+            return
+
+        log_file = EventHandler.monitor.server_logs[event.pathname]
+
+        new_lines = log_file.update_position()
+        lines = new_lines.split('\n')
+
+        for line in lines:
+            EventHandler.monitor.handle_newline_event(line, log_file.name)
+
+
 class ServerLogFile:
     watch_manager = pyinotify.WatchManager()
     notifier = pyinotify.Notifier(watch_manager, EventHandler())
@@ -13,7 +32,7 @@ class ServerLogFile:
         self.update_position()
 
         EventHandler.monitor = monitor
-        ServerLogFile.watchManager.add_watch(os.path.dirname(self.file), pyinotify.IN_MODIFY, rec=False)
+        ServerLogFile.watch_manager.add_watch(os.path.dirname(self.file), pyinotify.IN_MODIFY, rec=False)
 
     def update_position(self):
         with open(self.file) as f:
@@ -35,20 +54,4 @@ class ServerLogFile:
         ServerLogFile.notifier.loop()
 
 
-class EventHandler(pyinotify.ProcessEvent):
-    monitor = None
 
-    def __init__(self, monitor, *args, **kwargs):
-        super(EventHandler, self).__init__(*args, **kwargs)
-
-    def process_IN_MODIFY(self, event):
-        if event.pathname not in EventHandler.monitor.server_logs:
-            return
-
-        log_file = EventHandler.monitor.server_logs[event.pathname]
-
-        new_lines = log_file.update_position()
-        lines = new_lines.split('\n')
-
-        for line in lines:
-            EventHandler.monitor.handle_newline_event(line, log_file.name)
