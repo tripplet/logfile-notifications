@@ -63,7 +63,7 @@ class User:
                     # Cancel offline event for new_user
                     # And don't send online event
                     if new_user in self.offline_events:
-                        print('Canceling -> %s' % (self.cfg['name']))
+                        print('-> %s (canceled)' % (self.cfg['name']))
                         try:
                             self.push_scheduler.cancel(self.offline_events.pop(new_user))
                         except ValueError as err:
@@ -76,7 +76,7 @@ class User:
                     title = event_name
 
                     # Delay offline event
-                    print('Scheduling -> %s' % (self.cfg['name']))
+                    print('-> %s (delayed)' % (self.cfg['name']))
                     event = self.push_scheduler.enter(30, 1, self.push_as_thread, (title, new_user))
                     self.offline_events[new_user] = event
 

@@ -10,8 +10,8 @@ from .bot import TelegramBot
 
 
 class Monitor:
-    user_login_regex  = re.compile('(\w+) on')  # re.compile('\[[\d:]+\]\s\[[\w\s\/]+\]:\s([\w]+) joined the game')
-    user_logout_regex = re.compile('(\w+) off') # re.compile('\[[\d:]+\]\s\[[\w\s\/]+\]:\s([\w]+) left the game')
+    user_login_regex  = re.compile('\[[\d:]+\]\s\[[\w\s\/]+\]:\s([\w]+) joined the game')
+    user_logout_regex = re.compile('\[[\d:]+\]\s\[[\w\s\/]+\]:\s([\w]+) left the game')
 
     def __init__(self, config):
         self.users = []
@@ -27,6 +27,12 @@ class Monitor:
         if 'telegram_bot_token' in config:
             self.tgbot = TelegramBot(config, self.users)
             User.telegram_bot = self.tgbot
+
+        # override default regex
+        if 'user_login_regex' in config:
+            Monitor.user_login_regex = re.compile(config['user_login_regex'])
+        if 'user_logout_regex' in config:
+            Monitor.user_logout_regex = re.compile(config['user_logout_regex'])
 
         # start scheduler loop
         t = threading.Thread(target=self.scheduler_loop)
