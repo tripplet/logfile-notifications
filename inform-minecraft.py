@@ -76,14 +76,12 @@ def scheduler_loop(scheduler):
 
 
 class User:
-    online = False
-    last_seen = None
-    quiet_until = None
-    offline_events = dict()
-
-
     def __init__(self, user_config):
         self.cfg = user_config
+        self.online = False
+        self.last_seen = None
+        self.quiet_until = None
+        self.offline_events = dict()
 
         if 'nma_key' in self.cfg:
             self.nma = pynma.PyNMA([self.cfg['nma_key']])

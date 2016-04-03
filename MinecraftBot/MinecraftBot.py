@@ -21,10 +21,6 @@ except Exception as exp:
 
 
 class MinecraftBot:
-
-    _handle_response = None # Function responsible for handling a response from the user
-    _messages = 0 # Number of messages processed
-
     _quiet_times = {
         '4 Stunden':         lambda: datetime.now() + timedelta(hours=4),
         'Bis Morgen':        lambda: (datetime.now() + timedelta(days=1))
@@ -42,6 +38,9 @@ class MinecraftBot:
         try:
             self.cfg = config
             self.users = users
+
+            self._handle_response = None  # Function responsible for handling a response from the user
+            self._messages = 0  # Number of messages processed
 
             self.started = datetime.now()
             self.version = MinecraftBot.getVersion()
