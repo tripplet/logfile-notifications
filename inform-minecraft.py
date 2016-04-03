@@ -25,7 +25,7 @@ config_path = sys.argv[1]
 users = []
 server_logs = dict()
 tgbot = None
-scheduler = sched.scheduler(time.time, time.sleep)
+push_scheduler = sched.scheduler()
 
 with open(sys.argv[1]) as fp:
     config = yaml.load(fp)
@@ -62,7 +62,7 @@ def main():
     print('Logfile monitoring running')
 
     # start scheduler loop
-    t = threading.Thread(target=scheduler_loop, args=(scheduler,))
+    t = threading.Thread(target=scheduler_loop, args=(push_scheduler,))
     t.start()
 
     # start file notification loop
@@ -72,6 +72,7 @@ def main():
 def scheduler_loop(scheduler):
     while True:
         scheduler.run()
+        time.sleep(1)
 
 
 class User:
@@ -86,6 +87,11 @@ class User:
 
         if 'nma_key' in self.cfg:
             self.nma = pynma.PyNMA([self.cfg['nma_key']])
+
+
+    def push_as_thread(self, title, message, ignore_online=False):
+        thr = threading.Thread(target=self.push, args=(title, message, ignore_online))
+        thr.start()
 
 
     def push(self, title, message, ignore_online=False):
@@ -120,18 +126,22 @@ class User:
                     # Cancel offline event for new_user
                     # And don't send online event
                     if new_user in self.offline_events:
-                        scheduler.cancel(self.offline_events.pop(new_user))
+                        print('Canceling')
+                        try:
+                            push_scheduler.cancel(self.offline_events.pop(new_user))
+                        except ValueError as err:
+                            print('Error' + err)
+
                         return
 
                     title = 'Login ({})'.format(server_name)
-                    thr = threading.Thread(target=self.push, args=(title, new_user), kwargs={})
-                    thr.start()
+                    self.push_as_thread(title, new_user)
 
                 else:
                     title = event_name
 
                     # Delay offline event or 30 seconds
-                    event = scheduler.enter(30, 1, self.push, (title, new_user))
+                    event = push_scheduler.enter(10, 1, self.push_as_thread, (title, new_user))
                     self.offline_events[new_user] = event
 
         else:
