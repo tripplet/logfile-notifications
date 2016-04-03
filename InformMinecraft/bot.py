@@ -20,7 +20,7 @@ except Exception as exp:
         pass
 
 
-class MinecraftBot:
+class TelegramBot:
     _quiet_times = {
         '4 Stunden':         lambda: datetime.now() + timedelta(hours=4),
         'Bis Morgen':        lambda: (datetime.now() + timedelta(days=1))
@@ -43,7 +43,7 @@ class MinecraftBot:
             self._messages = 0  # Number of messages processed
 
             self.started = datetime.now()
-            self.version = MinecraftBot.getVersion()
+            self.version = TelegramBot.getVersion()
 
             self.bot = telegram.Bot(token=self.cfg['telegram_bot_token'])
             self.updater = Updater(bot=self.bot)
@@ -141,7 +141,7 @@ class MinecraftBot:
                          text='Version: {}\n'
                               'Am Leben seit: {}\n'
                               'Nachrichten verarbeitet: {}'
-                         .format(self.version, MinecraftBot.formatDate(self.started), self._messages))
+                         .format(self.version, TelegramBot.formatDate(self.started), self._messages))
 
 
     def cmd_settings(self, bot, update):
@@ -177,7 +177,7 @@ class MinecraftBot:
             if user.cfg['enabled']:
                 response += '{}: {}\n'.format(user.cfg['name'],
                                             'Online' if user.online else
-                                            'Offline (Zuletzt online ' + MinecraftBot.formatDate(user.last_seen) + ')')
+                                            'Offline (Zuletzt online ' + TelegramBot.formatDate(user.last_seen) + ')')
 
         self.sendMessage(update.message.chat_id, text = response)
 
