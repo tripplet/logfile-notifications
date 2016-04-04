@@ -18,7 +18,7 @@ def main():
         config = yaml.load(fp)
 
     print('Logfile monitoring running')
-    m = InformMinecraft.Monitor(config)
+    m = LogfileNotifications.Monitor(config)
     m.loop()
 
 if __name__ == '__main__':
