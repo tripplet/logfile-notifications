@@ -45,6 +45,10 @@ class Monitor:
                     slf = ServerLogFile(sv, self)
                     self.server_logs[slf.file] = slf
 
+        # inform users about restart
+        for user in self.users:
+           user.inform_start()
+
     def loop(self):
         if len(self.server_logs) == 0:
             self.read_stdin()

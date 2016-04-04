@@ -31,6 +31,11 @@ class User:
         thr.start()
 
 
+    def inform_start(self):
+        if 'start_msg' in self.cfg and self.cfg['start_msg'] == True:
+            self.push('Info', 'Restart')
+
+
     def push(self, title, message, ignore_online=False):
         if not self.cfg['enabled'] or (self.online and not ignore_online):
             return
