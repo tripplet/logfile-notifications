@@ -1,4 +1,4 @@
-# Inform mincraft script
+# Logfile Notifications
 
 Use python3
 
@@ -7,10 +7,13 @@ Use python3
 1. Create and use virtual environment (optional):
    `virtualenv venv; source venv/bin/activate`
    
-2. Install requirements: 
+2. Install requirements:
    `pip install -r requirements.txt`
-   
-3. Run
-   - `python inform-minecraft.py inform-config.yaml`
-   Or with virutal environment
-   - `venv/bin/python inform-minecraft.py inform-config.yaml`
+
+3. Copy config file
+   `cp sample-config.yaml config.yaml`
+
+4. Run
+   - `python notifications.py config.yaml`
+   Or with virtual environment
+   - `venv/bin/python notifications.py config.yaml`
