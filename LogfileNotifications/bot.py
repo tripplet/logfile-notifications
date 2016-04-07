@@ -39,7 +39,7 @@ class TelegramBot:
             self.cfg = config
             self.users = users
 
-            self._handle_response = None  # Function responsible for handling a response from the user
+            self._handle_response = dict()  # Function responsible for handling a response from the user
             self._messages = 0  # Number of messages processed
 
             self.started = datetime.now()
@@ -164,9 +164,9 @@ class TelegramBot:
                 user.push('Broadcast', update.message.text, ignore_online=True)
 
             self.sendMessage(update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
-            self._handle_response = None
+            self.set_handle_response(update.message.chat_id, None)
 
-        self._handle_response = broadcast_response
+        self.set_handle_response(update.message.chat_id, broadcast_response)
 
 
     def cmd_status(self, bot, update):
@@ -194,28 +194,33 @@ class TelegramBot:
                 self._findUserById(update.message.chat_id).quiet_until = self._quiet_times[update.message.text]()
 
                 self.sendMessage(update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
-                self._handle_response = None
+                self.set_handle_response(update.message.chat_id, None)
 
             else:
                 self.sendMessage(update.message.chat_id, text='Bitte wähle eine der folgenden Möglichkeiten',
                                  reply_markup=self.reply_quiet)
 
-        self._handle_response = quiet_response
+        self.set_handle_response(update.message.chat_id, quiet_response)
 
 
     def cmd_cancel(self, bot, update):
         if not self.is_authorized(bot, update): return
 
         self.sendMessage(update.message.chat_id, text='Abgebrochen', reply_markup=telegram.ReplyKeyboardHide())
-        self._handle_response = None
+        self.set_handle_response(update.message.chat_id, None)
+
+
+    def set_handle_response(self, chat_id, response_func):
+        self._handle_response[chat_id] = response_func
 
 
     def rx_message(self, bot, update):
         if not self.is_authorized(bot, update): return
 
+        chat_id = update.message.chat_id
         # Not expecting a response
-        if not self._handle_response is None:
-            self._handle_response(self, update)
+        if chat_id in self._handle_response and self._handle_response[chat_id] is not None:
+            self._handle_response[chat_id](self, update)
 
 
     def cmd_help(self, bot, update):
