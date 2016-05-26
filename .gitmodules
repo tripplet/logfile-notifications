@@ -1,0 +1,3 @@
+[submodule "bothelper"]
+	path = bothelper
+	url = git@github.com:tripplet/bothelper.git

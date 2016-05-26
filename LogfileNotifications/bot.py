@@ -3,7 +3,9 @@
 from datetime import datetime, timedelta
 
 import telegram # pip install python-telegram-bot
-from telegram.ext import Updater
+from telegram.ext import CommandHandler
+
+from bothelper import TelegramBot
 
 import logging
 logging.basicConfig(level=logging.ERROR,
@@ -20,7 +22,7 @@ except Exception as exp:
         pass
 
 
-class TelegramBot:
+class NotificationBot(TelegramBot):
     _quiet_times = {
         '4 Stunden':         lambda: datetime.now() + timedelta(hours=4),
         'Bis Morgen':        lambda: (datetime.now() + timedelta(days=1))
@@ -35,79 +37,16 @@ class TelegramBot:
                                                 one_time_keyboard=True)
 
     def __init__(self, config, users):
-        try:
-            self.cfg = config
-            self.users = users
+        super().__init__(config)
+        self.users = users
 
-            self._handle_response = dict()  # Function responsible for handling a response from the user
-            self._messages = 0  # Number of messages processed
+        self.dispatcher.addTelegramCommandHandler(CommandHandler("status", self.cmd_status))
+        self.dispatcher.addTelegramCommandHandler(CommandHandler("settings", self.cmd_settings))
+        self.dispatcher.addTelegramCommandHandler(CommandHandler("quiet", self.cmd_quiet))
+        self.dispatcher.addTelegramCommandHandler(CommandHandler("broadcast", self.cmd_broadcast))
 
-            self.started = datetime.now()
-            self.version = TelegramBot.getVersion()
-
-            self.bot = telegram.Bot(token=self.cfg['telegram_bot_token'])
-            self.updater = Updater(bot=self.bot)
-
-            # Get the dispatcher to register handlers
-            self.dispatcher = self.updater.dispatcher
-
-            self.dispatcher.addErrorHandler(self.bot_error)
-
-            # add commands
-            self.dispatcher.addTelegramMessageHandler(self.rx_message)
-            self.dispatcher.addTelegramCommandHandler("start", self.cmd_start)
-            self.dispatcher.addTelegramCommandHandler("info", self.cmd_info)
-            self.dispatcher.addTelegramCommandHandler("cancel", self.cmd_cancel)
-            self.dispatcher.addTelegramCommandHandler("status", self.cmd_status)
-            self.dispatcher.addTelegramCommandHandler("settings", self.cmd_settings)
-            self.dispatcher.addTelegramCommandHandler("quiet", self.cmd_quiet)
-            self.dispatcher.addTelegramCommandHandler("broadcast", self.cmd_broadcast)
-            self.dispatcher.addTelegramCommandHandler("help", self.cmd_help)
-
-            self.dispatcher.addUnknownTelegramCommandHandler(self.cmd_help)
-
-            # Start the Bot
-            self.updater.start_polling(clean=True, timeout=30)
-
-        except Exception as exp:
-            print('Error creating telegram bot')
-
-
-    @staticmethod
-    def formatDate(date):
-        if date is None:
-            return 'Unbekannt'
-        else:
-            return date.strftime('%a %-d. %b - %H:%M')
-
-
-    @staticmethod
-    def getVersion():
-        try:
-            import subprocess
-            import os
-            import inspect
-            
-            # Determine directory this file is located in
-            cwd = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            
-            # try .version file
-            version_file = os.path.join(cwd, '.version')
-            if os.path.exists(version_file):
-                with open(version_file) as f:
-                    version = f.read()
-                    return version
-            else:
-                # try with git
-                return subprocess.check_output(['git', 'describe', '--long', '--always'], cwd=cwd).decode('utf8').strip()
-        except Exception:
-            return '?'
-
-
-    def sendMessage(self, chat_id, text, **args):
-        self.bot.sendMessage(chat_id=chat_id, text=text, **args)
-        self._messages += 1
-
+    def _reload_config_file(self):
+        self.cfg = self.config_file
 
     def is_authorized(self, bot, update):
         authorized_user = [user.cfg["telegram_chat_id"] for user in self.users if "telegram_chat_id" in user.cfg]
@@ -117,9 +56,8 @@ class TelegramBot:
             return False
 
         # Received a valid message from an authorized user
-        self._messages += 1
+        self.messages += 1
         return True
-
 
     def _findUserById(self, id):
         # find user with the current chat id
@@ -129,25 +67,9 @@ class TelegramBot:
         # set quiet time of user
         return found_user[0]
 
-
-    def cmd_start(self, bot, update):
-        if not self.is_authorized(bot, update): return
-        self.cmd_help(bot, update)
-
-
-    def cmd_info(self, bot, update):
-        if not self.is_authorized(bot, update): return
-        self.sendMessage(update.message.chat_id,
-                         text='Version: {}\n'
-                              'Am Leben seit: {}\n'
-                              'Nachrichten verarbeitet: {}'
-                         .format(self.version, TelegramBot.formatDate(self.started), self._messages))
-
-
     def cmd_settings(self, bot, update):
         if not self.is_authorized(bot, update): return
         self.sendMessage(update.message.chat_id, text=str(self._findUserById(update.message.chat_id)))
-
 
     def cmd_broadcast(self, bot, update):
         if not self.is_authorized(bot, update): return
@@ -168,7 +90,6 @@ class TelegramBot:
 
         self.set_handle_response(update.message.chat_id, broadcast_response)
 
-
     def cmd_status(self, bot, update):
         if not self.is_authorized(bot, update): return
 
@@ -180,7 +101,6 @@ class TelegramBot:
                                             'Offline (Zuletzt online ' + TelegramBot.formatDate(user.last_seen) + ')')
 
         self.sendMessage(update.message.chat_id, text = response)
-
 
     def cmd_quiet(self, bot, update):
         if not self.is_authorized(bot, update): return
@@ -202,27 +122,6 @@ class TelegramBot:
 
         self.set_handle_response(update.message.chat_id, quiet_response)
 
-
-    def cmd_cancel(self, bot, update):
-        if not self.is_authorized(bot, update): return
-
-        self.sendMessage(update.message.chat_id, text='Abgebrochen', reply_markup=telegram.ReplyKeyboardHide())
-        self.set_handle_response(update.message.chat_id, None)
-
-
-    def set_handle_response(self, chat_id, response_func):
-        self._handle_response[chat_id] = response_func
-
-
-    def rx_message(self, bot, update):
-        if not self.is_authorized(bot, update): return
-
-        chat_id = update.message.chat_id
-        # Not expecting a response
-        if chat_id in self._handle_response and self._handle_response[chat_id] is not None:
-            self._handle_response[chat_id](self, update)
-
-
     def cmd_help(self, bot, update):
         if not self.is_authorized(bot, update): return
 
@@ -235,7 +134,3 @@ class TelegramBot:
                                                       '/help - Zeigt die Hilfe\n'
                                                       '/cancel - Aktuelle Aktion abbrechen',
                          reply_markup=telegram.ReplyKeyboardHide())
-
-
-    def bot_error(self, bot, update, error):
-        print('Update "%s" caused error "%s"' % (update, error))

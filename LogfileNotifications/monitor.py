@@ -6,7 +6,7 @@ import sys
 import re
 
 from .user import User
-from .bot import TelegramBot
+from .bot import NotificationBot
 
 
 class Monitor:
@@ -25,7 +25,7 @@ class Monitor:
 
         # create telegram bot
         if 'telegram_bot_token' in config:
-            self.tgbot = TelegramBot(config, self.users)
+            self.tgbot = NotificationBot(config, self.users)
             User.telegram_bot = self.tgbot
 
         # override default regex
