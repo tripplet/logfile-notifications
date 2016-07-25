@@ -25,22 +25,27 @@ class User:
         if 'nma_key' in self.cfg:
             self.nma = pynma.PyNMA([self.cfg['nma_key']])
 
+    def should_send_push(self, ignore_online=False):
+        if not self.cfg['enabled'] \
+                or (self.online and not ignore_online) \
+                or (self.quiet_until is not None and self.quiet_until > datetime.now()):
+            return False
+        else:
+            return True
 
-    def push_as_thread(self, title, message, ignore_online=False):
-        thr = threading.Thread(target=self.push, args=(title, message, ignore_online))
+    def push(self, title, message, ignore_online=False):
+        if not self.should_send_push(ignore_online):
+            return
+
+        thr = threading.Thread(target=self.push_synchron, args=(title, message, ignore_online))
         thr.start()
-
 
     def inform_start(self):
         if 'start_msg' in self.cfg and self.cfg['start_msg'] == True:
-            self.push('Info', 'Restart')
+            self.push_synchron('Info', 'Restart')
 
-
-    def push(self, title, message, ignore_online=False):
-        if not self.cfg['enabled'] or (self.online and not ignore_online):
-            return
-
-        if self.quiet_until is not None and self.quiet_until > datetime.now():
+    def push_synchron(self, title, message, ignore_online=False):
+        if not self.should_send_push(ignore_online):
             return
 
         print('-> %s' % self.cfg['name'])
@@ -76,14 +81,15 @@ class User:
 
                         return
                     title = 'Login ({})'.format(server_name)
-                    self.push_as_thread(title, new_user)
+                    self.push(title, new_user)
                 else:
                     title = event_name
 
                     # Delay offline event
-                    print('-> %s (delayed)' % (self.cfg['name']))
-                    event = self.push_scheduler.enter(30, 1, self.push_as_thread, (title, new_user))
-                    self.offline_events[new_user] = event
+                    if self.should_send_push():
+                        print('-> %s (delayed)' % (self.cfg['name']))
+                        event = self.push_scheduler.enter(30, 1, self.push, (title, new_user))
+                        self.offline_events[new_user] = event
 
         else:
             self.last_seen = datetime.now()

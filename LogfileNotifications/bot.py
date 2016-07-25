@@ -83,7 +83,7 @@ class NotificationBot(TelegramBot):
         # Function handling the response
         def broadcast_response(self, update):
             for user in self.users:
-                user.push('Broadcast', update.message.text, ignore_online=True)
+                user.push_synchron('Broadcast', update.message.text, ignore_online=True)
 
             self.sendMessage(update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
             self.set_handle_response(update.message.chat_id, None)
