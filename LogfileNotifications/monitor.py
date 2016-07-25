@@ -10,8 +10,8 @@ from .bot import NotificationBot
 
 
 class Monitor:
-    user_login_regex  = re.compile('\[[\d:]+\]\s\[[\w\s\/]+\]:\s([\w]+) joined the game')
-    user_logout_regex = re.compile('\[[\d:]+\]\s\[[\w\s\/]+\]:\s([\w]+) left the game')
+    user_login_regex  = re.compile('\[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) joined the game')
+    user_logout_regex = re.compile('\[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) left the game')
 
     def __init__(self, config):
         self.users = []
@@ -47,7 +47,7 @@ class Monitor:
 
         # inform users about restart
         for user in self.users:
-           user.inform_start()
+            user.inform_start()
 
     def loop(self):
         if len(self.server_logs) == 0:
@@ -85,7 +85,7 @@ class Monitor:
 
         for cur_user in self.users:
             if result_login is not None:
-                cur_user.handleEvent(result_login.group(1), event_provider, 'Login', 'login_msg')
+                cur_user.handle_event(result_login.group(1), event_provider, 'Login', 'login_msg')
 
             if result_logout is not None:
-                cur_user.handleEvent(result_logout.group(1), event_provider, 'Logout', 'logout_msg')
+                cur_user.handle_event(result_logout.group(1), event_provider, 'Logout', 'logout_msg')

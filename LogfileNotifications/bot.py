@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 
-import telegram # pip install python-telegram-bot
+import telegram  # pip install python-telegram-bot
 from telegram.ext import CommandHandler
 
 from bothelper import TelegramBot
@@ -51,7 +51,7 @@ class NotificationBot(TelegramBot):
     def is_authorized(self, bot, update):
         authorized_user = [user.cfg["telegram_chat_id"] for user in self.users if "telegram_chat_id" in user.cfg]
 
-        if not update.message.chat_id in authorized_user:
+        if update.message.chat_id not in authorized_user:
             self.sendMessage(update.message.chat_id, text='Unauthorized: %d' % update.message.chat_id)
             return False
 
@@ -59,17 +59,17 @@ class NotificationBot(TelegramBot):
         self.messages += 1
         return True
 
-    def _findUserById(self, id):
+    def _find_user_by_id(self, user_id):
         # find user with the current chat id
         found_user = [user for user in self.users if "telegram_chat_id" in user.cfg and
-                      user.cfg["telegram_chat_id"] == id]
+                      user.cfg["telegram_chat_id"] == user_id]
 
         # set quiet time of user
         return found_user[0]
 
     def cmd_settings(self, bot, update):
         if not self.is_authorized(bot, update): return
-        self.sendMessage(update.message.chat_id, text=str(self._findUserById(update.message.chat_id)))
+        self.sendMessage(update.message.chat_id, text=str(self._find_user_by_id(update.message.chat_id)))
 
     def cmd_broadcast(self, bot, update):
         if not self.is_authorized(bot, update): return
@@ -97,21 +97,23 @@ class NotificationBot(TelegramBot):
         for user in self.users:
             if user.cfg['enabled']:
                 response += '{}: {}\n'.format(user.cfg['name'],
-                                            'Online' if user.online else
-                                            'Offline (Zuletzt online ' + TelegramBot.formatDate(user.last_seen) + ')')
+                                              'Online' if user.online else
+                                              'Offline (Zuletzt online ' + TelegramBot.formatDate(user.last_seen) + ')')
 
-        self.sendMessage(update.message.chat_id, text = response)
+        self.sendMessage(update.message.chat_id, text=response)
 
     def cmd_quiet(self, bot, update):
         if not self.is_authorized(bot, update): return
 
-        self.sendMessage(update.message.chat_id, text='Wie lange?\nNutze /cancel zum Abbrechen', reply_markup=self._reply_quiet)
+        self.sendMessage(update.message.chat_id,
+                         text='Wie lange?\nNutze /cancel zum Abbrechen',
+                         reply_markup=self._reply_quiet)
 
         # Function handling the response
         def quiet_response(self, update):
             if update.message.text in self._quiet_times:
                 # find user with the current chat id
-                self._findUserById(update.message.chat_id).quiet_until = self._quiet_times[update.message.text]()
+                self._find_user_by_id(update.message.chat_id).quiet_until = self._quiet_times[update.message.text]()
 
                 self.sendMessage(update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
                 self.set_handle_response(update.message.chat_id, None)

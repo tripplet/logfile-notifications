@@ -10,6 +10,7 @@ from pushbullet import Pushbullet
 
 from .bot import TelegramBot
 
+
 class User:
     telegram_bot = None
 
@@ -56,16 +57,16 @@ class User:
                 self.nma.push('MinecraftServer', title + ': ' + message)
 
             elif method == 'pushbullet' and 'pushbullet_token' in self.cfg:
-                self.sendPushbullet(title, message)
+                self.send_pushbullet(title, message)
 
             elif method == 'pushover' and 'pushover_token' in self.cfg:
-                self.sendPushover(title, message)
+                self.send_pushover(title, message)
 
             elif method == 'telegram' and 'telegram_chat_id' in self.cfg and User.telegram_bot is not None:
-                User.telegram_bot.sendMessage(chat_id=self.cfg['telegram_chat_id'], text="{}: {}".format(title, message))
+                User.telegram_bot.sendMessage(chat_id=self.cfg['telegram_chat_id'],
+                                              text="{}: {}".format(title, message))
 
-
-    def handleEvent(self, new_user, server_name, event_name, check_field):
+    def handle_event(self, new_user, server_name, event_name, check_field):
         if not self.cfg['search'] in new_user:
             if self.cfg[check_field]:
 
@@ -77,7 +78,7 @@ class User:
                         try:
                             self.push_scheduler.cancel(self.offline_events.pop(new_user))
                         except ValueError as err:
-                            print('Error' + err)
+                            print('Error' + str(err))
 
                         return
                     title = 'Login ({})'.format(server_name)
@@ -98,18 +99,16 @@ class User:
             elif event_name == 'Logout':
                 self.online = False
 
-
-    def sendPushbullet(self, title, message):
+    def send_pushbullet(self, title, message):
         pb = Pushbullet(self.cfg['pushbullet_token'])
 
-        selected_device = None # All devices
+        selected_device = None  # All devices
 
-        if ('pushbullet_device' in self.cfg):
+        if 'pushbullet_device' in self.cfg:
             selected_device = next(dev for dev in pb.devices if dev.nickname == self.cfg['pushbullet_device'])
         pb.push_note(title, message, device=selected_device)
 
-
-    def sendPushover(self, title, message):
+    def send_pushover(self, title, message):
         conn = http.client.HTTPSConnection('api.pushover.net:443')
         conn.request('POST', '/1/messages.json', urllib.parse.urlencode({
             'token': self.cfg['pushover_token'],

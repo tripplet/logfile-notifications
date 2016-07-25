@@ -8,7 +8,9 @@ class EventHandler(pyinotify.ProcessEvent):
     def __init__(self, *args, **kwargs):
         super(EventHandler, self).__init__(*args, **kwargs)
 
-    def process_IN_MODIFY(self, event):
+    # noinspection PyPep8Naming
+    @staticmethod
+    def process_IN_MODIFY(event):
         if event.pathname not in EventHandler.monitor.server_logs:
             return
 
