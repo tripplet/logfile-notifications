@@ -42,7 +42,7 @@ class User:
         thr.start()
 
     def inform_start(self):
-        if 'start_msg' in self.cfg and self.cfg['start_msg'] == True:
+        if 'start_msg' in self.cfg and self.cfg['start_msg'] is True:
             self.push_synchron('Info', 'Restart')
 
     def push_synchron(self, title, message, ignore_online=False):

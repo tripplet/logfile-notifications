@@ -10,7 +10,7 @@ from .bot import NotificationBot
 
 
 class Monitor:
-    user_login_regex  = re.compile('\[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) joined the game')
+    user_login_regex = re.compile('\[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) joined the game')
     user_logout_regex = re.compile('\[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) left the game')
 
     def __init__(self, config):
@@ -54,7 +54,7 @@ class Monitor:
             self.read_stdin()
         else:
             from .logfile import ServerLogFile
-            ServerLogFile.loop() # start file notification loop
+            ServerLogFile.loop()  # start file notification loop
 
     def read_stdin(self):
         """Read from stdin for debugging"""
@@ -72,7 +72,7 @@ class Monitor:
         if line == '':
             return
 
-        result_login  = Monitor.user_login_regex.search(line)
+        result_login = Monitor.user_login_regex.search(line)
         result_logout = Monitor.user_logout_regex.search(line)
 
         if result_login is not None:

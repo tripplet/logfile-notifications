@@ -8,10 +8,8 @@ from telegram.ext import CommandHandler
 from bothelper import TelegramBot
 
 import logging
-logging.basicConfig(level=logging.ERROR,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-# German time formating
+# German time formatting
 import locale
 try:
     locale.setlocale(locale.LC_TIME, 'de_DE')
@@ -21,13 +19,15 @@ except Exception as exp:
     except Exception as exp:
         pass
 
+logging.basicConfig(level=logging.ERROR,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 
 class NotificationBot(TelegramBot):
     _quiet_times = {
-        '4 Stunden':         lambda: datetime.now() + timedelta(hours=4),
-        'Bis Morgen':        lambda: (datetime.now() + timedelta(days=1))
-                                      .replace(hour=6, minute=0, second=0, microsecond=0),
-        'Bis Heute Abend':   lambda: datetime.now().replace(hour=20, minute=0, second=0, microsecond=0),
+        '4 Stunden': lambda: datetime.now() + timedelta(hours=4),
+        'Bis Morgen': lambda: (datetime.now() + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0),
+        'Bis Heute Abend': lambda: datetime.now().replace(hour=20, minute=0, second=0, microsecond=0),
         'RuheModus beenden': lambda: None
     }
 
@@ -68,30 +68,30 @@ class NotificationBot(TelegramBot):
         return found_user[0]
 
     def cmd_settings(self, bot, update):
-        if not self.is_authorized(bot, update): return
+        if not self.is_authorized(bot, update):
+            return
         self.sendMessage(update.message.chat_id, text=str(self._find_user_by_id(update.message.chat_id)))
 
     def cmd_broadcast(self, bot, update):
-        if not self.is_authorized(bot, update): return
-
-        # Text after /broadcast
-        msg = update.message.text[10:]
+        if not self.is_authorized(bot, update):
+            return
 
         self.sendMessage(update.message.chat_id, text='Was möchtest du allen schreiben?\nNutze /cancel zum Abbrechen',
                          reply_markup=telegram.ForceReply())
 
         # Function handling the response
-        def broadcast_response(self, update):
+        def broadcast_response(_, resp_update):
             for user in self.users:
-                user.push_synchron('Broadcast', update.message.text, ignore_online=True)
+                user.push_synchron('Broadcast', resp_update.message.text, ignore_online=True)
 
-            self.sendMessage(update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
-            self.set_handle_response(update.message.chat_id, None)
+            self.sendMessage(resp_update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
+            self.set_handle_response(resp_update.message.chat_id, None)
 
         self.set_handle_response(update.message.chat_id, broadcast_response)
 
     def cmd_status(self, bot, update):
-        if not self.is_authorized(bot, update): return
+        if not self.is_authorized(bot, update):
+            return
 
         response = ''
         for user in self.users:
@@ -103,29 +103,34 @@ class NotificationBot(TelegramBot):
         self.sendMessage(update.message.chat_id, text=response)
 
     def cmd_quiet(self, bot, update):
-        if not self.is_authorized(bot, update): return
+        if not self.is_authorized(bot, update):
+            return
 
         self.sendMessage(update.message.chat_id,
                          text='Wie lange?\nNutze /cancel zum Abbrechen',
                          reply_markup=self._reply_quiet)
 
         # Function handling the response
-        def quiet_response(self, update):
-            if update.message.text in self._quiet_times:
+        def quiet_response(resp_self, resp_update):
+            if resp_update.message.text in self._quiet_times:
                 # find user with the current chat id
-                self._find_user_by_id(update.message.chat_id).quiet_until = self._quiet_times[update.message.text]()
+                self._find_user_by_id(resp_update.message.chat_id).quiet_until = \
+                    self._quiet_times[resp_update.message.text]()
 
-                self.sendMessage(update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
-                self.set_handle_response(update.message.chat_id, None)
+                self.sendMessage(resp_update.message.chat_id,
+                                 text='Erledigt',
+                                 reply_markup=telegram.ReplyKeyboardHide())
+                self.set_handle_response(resp_update.message.chat_id, None)
 
             else:
-                self.sendMessage(update.message.chat_id, text='Bitte wähle eine der folgenden Möglichkeiten',
-                                 reply_markup=self.reply_quiet)
+                resp_self.sendMessage(resp_update.message.chat_id, text='Bitte wähle eine der folgenden Möglichkeiten',
+                                      reply_markup=resp_self.reply_quiet)
 
         self.set_handle_response(update.message.chat_id, quiet_response)
 
     def cmd_help(self, bot, update):
-        if not self.is_authorized(bot, update): return
+        if not self.is_authorized(bot, update):
+            return
 
         self.sendMessage(update.message.chat_id, text='Hi, meine Kommands:\n'
                                                       '/info - Bot Info & Statistik\n'
