@@ -37,7 +37,7 @@ class NotificationBot(TelegramBot):
                                                 one_time_keyboard=True)
 
     def __init__(self, config, users):
-        super().__init__(config)
+        super().__init__(config, use_caller_version=True)
         self.users = users
 
         self.dispatcher.addTelegramCommandHandler(CommandHandler("status", self.cmd_status))
