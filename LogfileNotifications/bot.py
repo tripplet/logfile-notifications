@@ -40,10 +40,10 @@ class NotificationBot(TelegramBot):
         super().__init__(config, use_caller_version=True)
         self.users = users
 
-        self.dispatcher.addTelegramCommandHandler(CommandHandler("status", self.cmd_status))
-        self.dispatcher.addTelegramCommandHandler(CommandHandler("settings", self.cmd_settings))
-        self.dispatcher.addTelegramCommandHandler(CommandHandler("quiet", self.cmd_quiet))
-        self.dispatcher.addTelegramCommandHandler(CommandHandler("broadcast", self.cmd_broadcast))
+        self.dispatcher.add_handler(CommandHandler("status", self.cmd_status))
+        self.dispatcher.add_handler(CommandHandler("settings", self.cmd_settings))
+        self.dispatcher.add_handler(CommandHandler("quiet", self.cmd_quiet))
+        self.dispatcher.add_handler(CommandHandler("broadcast", self.cmd_broadcast))
 
     def _reload_config_file(self):
         self.cfg = self.config_file

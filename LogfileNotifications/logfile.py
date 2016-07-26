@@ -11,11 +11,8 @@ class EventHandler(pyinotify.ProcessEvent):
     # noinspection PyPep8Naming
     @staticmethod
     def process_IN_MODIFY(event):
-        print(event)
         if os.path.dirname(event.pathname) not in EventHandler.monitor.server_logs:
             return
-
-        print('weiter')
 
         log_file = EventHandler.monitor.server_logs[os.path.dirname(event.pathname)]
 
@@ -45,14 +42,12 @@ class LogFile:
         else:
             self.watch_path = os.path.dirname(self.path)
 
-        print('Watch: '+ self.watch_path)
         LogFile.watch_manager.add_watch(self.watch_path, pyinotify.IN_MODIFY, rec=False)
 
     def update_position(self, path):
         if os.path.isdir(path):
             for dir_entry in os.scandir(path):
                 if dir_entry.is_file():
-                    print('###' + dir_entry.path)
                     self.update_file_position(dir_entry.path)
             return ''
         else:
@@ -73,13 +68,8 @@ class LogFile:
             if last_n >= 0:
                 self.positions[file_path] += last_n + 1
 
-            f.seek(self.positions[file_path])
-            print(file_path + '|||' + new_lines)
             return new_lines
 
     @staticmethod
     def loop():
         LogFile.notifier.loop()
-
-
-
