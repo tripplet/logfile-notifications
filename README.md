@@ -1,6 +1,7 @@
 # Logfile Notifications
 
-Use python3
+### Requirements
+- python3
 
 ### Install
 
@@ -17,3 +18,8 @@ Use python3
    - `python notifications.py config.yaml`
    Or with virtual environment
    - `venv/bin/python notifications.py config.yaml`
+
+### Using the docker image
+   `docker pull ttobias/logfile-notifications`
+   
+   https://hub.docker.com/r/ttobias/logfile-notifications/
