@@ -4,6 +4,7 @@ import threading
 from datetime import datetime
 import sys
 import re
+import os
 
 from .user import User
 from .bot import NotificationBot
@@ -40,10 +41,10 @@ class Monitor:
 
         # create inotify listener
         if 'server_logs' in config:
-            from .logfile import ServerLogFile
+            from .logfile import LogFile
             for sv in config['server_logs']:
-                    slf = ServerLogFile(sv, self)
-                    self.server_logs[slf.file] = slf
+                    slf = LogFile(sv, self)
+                    self.server_logs[slf.watch_path] = slf
 
         # inform users about restart
         for user in self.users:
@@ -53,8 +54,8 @@ class Monitor:
         if len(self.server_logs) == 0:
             self.read_stdin()
         else:
-            from .logfile import ServerLogFile
-            ServerLogFile.loop()  # start file notification loop
+            from .logfile import LogFile
+            LogFile.loop()  # start file notification loop
 
     def read_stdin(self):
         """Read from stdin for debugging"""

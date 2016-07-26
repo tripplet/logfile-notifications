@@ -4,10 +4,10 @@ telegram_bot_token: accesstoken
 
 server_logs:
   - name: Server 1
-    file: /complete/path/to/log/file.log
+    path: /complete/path/to/log/file.log
 
   - name: Server 2
-    file: /another/path/to/log/file.log
+    path: /another/path/to/log/file.log
 
 users:
   - name: username
