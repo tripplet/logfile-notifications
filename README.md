@@ -4,9 +4,9 @@
 
 - Supports multiple log files
 - Trigger lines in logfiles based on regex
-- Service can be controlled interactively via the Telegram bot
+- Service can be controlled interactively through the Telegram bot
 - Disable notifications for certain time
-- Administrator users can change the config via Telegram
+- Administrator users can change the config through the Telegram bot
 
 #### Supported notification services
 - [Notify My Android](http://www.notifymyandroid.com/)
