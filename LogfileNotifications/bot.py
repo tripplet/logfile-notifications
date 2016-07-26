@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import locale
+import logging
 from datetime import datetime, timedelta
 
 import telegram  # pip install python-telegram-bot
@@ -7,16 +9,13 @@ from telegram.ext import CommandHandler
 
 from bothelper import TelegramBot
 
-import logging
-
 # German time formatting
-import locale
 try:
     locale.setlocale(locale.LC_TIME, 'de_DE')
-except Exception as exp:
+except locale.Error as exp:
     try:
         locale.setlocale(locale.LC_TIME, 'de_DE.utf8')
-    except Exception as exp:
+    except locale.Error as exp:
         pass
 
 logging.basicConfig(level=logging.ERROR,
@@ -52,7 +51,7 @@ class NotificationBot(TelegramBot):
         authorized_user = [user.cfg["telegram_chat_id"] for user in self.users if "telegram_chat_id" in user.cfg]
 
         if update.message.chat_id not in authorized_user:
-            self.sendMessage(update.message.chat_id, text='Unauthorized: %d' % update.message.chat_id)
+            self.send_message(update.message.chat_id, text='Unauthorized: %d' % update.message.chat_id)
             return False
 
         # Received a valid message from an authorized user
@@ -70,21 +69,21 @@ class NotificationBot(TelegramBot):
     def cmd_settings(self, bot, update):
         if not self.is_authorized(bot, update):
             return
-        self.sendMessage(update.message.chat_id, text=str(self._find_user_by_id(update.message.chat_id)))
+        self.send_message(update.message.chat_id, text=str(self._find_user_by_id(update.message.chat_id)))
 
     def cmd_broadcast(self, bot, update):
         if not self.is_authorized(bot, update):
             return
 
-        self.sendMessage(update.message.chat_id, text='Was möchtest du allen schreiben?\nNutze /cancel zum Abbrechen',
-                         reply_markup=telegram.ForceReply())
+        self.send_message(update.message.chat_id, text='Was möchtest du allen schreiben?\nNutze /cancel zum Abbrechen',
+                          reply_markup=telegram.ForceReply())
 
         # Function handling the response
         def broadcast_response(_, resp_update):
             for user in self.users:
                 user.push_synchron('Broadcast', resp_update.message.text, ignore_online=True)
 
-            self.sendMessage(resp_update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
+            self.send_message(resp_update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
             self.set_handle_response(resp_update.message.chat_id, None)
 
         self.set_handle_response(update.message.chat_id, broadcast_response)
@@ -98,17 +97,18 @@ class NotificationBot(TelegramBot):
             if user.cfg['enabled']:
                 response += '{}: {}\n'.format(user.cfg['name'],
                                               'Online' if user.online else
-                                              'Offline (Zuletzt online ' + TelegramBot.formatDate(user.last_seen) + ')')
+                                              'Offline (Zuletzt online ' +
+                                              TelegramBot.format_date(user.last_seen) + ')')
 
-        self.sendMessage(update.message.chat_id, text=response)
+        self.send_message(update.message.chat_id, text=response)
 
     def cmd_quiet(self, bot, update):
         if not self.is_authorized(bot, update):
             return
 
-        self.sendMessage(update.message.chat_id,
-                         text='Wie lange?\nNutze /cancel zum Abbrechen',
-                         reply_markup=self._reply_quiet)
+        self.send_message(update.message.chat_id,
+                          text='Wie lange?\nNutze /cancel zum Abbrechen',
+                          reply_markup=self._reply_quiet)
 
         # Function handling the response
         def quiet_response(resp_self, resp_update):
@@ -117,9 +117,9 @@ class NotificationBot(TelegramBot):
                 self._find_user_by_id(resp_update.message.chat_id).quiet_until = \
                     self._quiet_times[resp_update.message.text]()
 
-                self.sendMessage(resp_update.message.chat_id,
-                                 text='Erledigt',
-                                 reply_markup=telegram.ReplyKeyboardHide())
+                self.send_message(resp_update.message.chat_id,
+                                  text='Erledigt',
+                                  reply_markup=telegram.ReplyKeyboardHide())
                 self.set_handle_response(resp_update.message.chat_id, None)
 
             else:
@@ -132,12 +132,13 @@ class NotificationBot(TelegramBot):
         if not self.is_authorized(bot, update):
             return
 
-        self.sendMessage(update.message.chat_id, text='Hi, meine Kommands:\n'
-                                                      '/info - Bot Info & Statistik\n'
-                                                      '/status - Status\n'
-                                                      '/quiet - Ich will meine Ruhe\n'
-                                                      '/settings - Einstellungen\n'
-                                                      '/broadcast - Nachricht an alle\n'
-                                                      '/help - Zeigt die Hilfe\n'
-                                                      '/cancel - Aktuelle Aktion abbrechen',
-                         reply_markup=telegram.ReplyKeyboardHide())
+        self.send_message(update.message.chat_id,
+                          text='Hi, meine Kommands:\n'
+                               '/info - Bot Info & Statistik\n'
+                               '/status - Status\n'
+                               '/quiet - Ich will meine Ruhe\n'
+                               '/settings - Einstellungen\n'
+                               '/broadcast - Nachricht an alle\n'
+                               '/help - Zeigt die Hilfe\n'
+                               '/cancel - Aktuelle Aktion abbrechen',
+                          reply_markup=telegram.ReplyKeyboardHide())

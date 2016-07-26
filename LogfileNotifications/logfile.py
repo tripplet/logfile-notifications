@@ -23,7 +23,7 @@ class EventHandler(pyinotify.ProcessEvent):
             EventHandler.monitor.handle_newline_event(line, log_file.name)
 
 
-class LogFile:
+class FileWatcher:
     watch_manager = pyinotify.WatchManager()
     notifier = pyinotify.Notifier(watch_manager, EventHandler())
 
@@ -42,7 +42,7 @@ class LogFile:
         else:
             self.watch_path = os.path.dirname(self.path)
 
-        LogFile.watch_manager.add_watch(self.watch_path, pyinotify.IN_MODIFY, rec=False)
+        FileWatcher.watch_manager.add_watch(self.watch_path, pyinotify.IN_MODIFY, rec=False)
 
     def update_position(self, path):
         if os.path.isdir(path):
@@ -72,4 +72,4 @@ class LogFile:
 
     @staticmethod
     def loop():
-        LogFile.notifier.loop()
+        FileWatcher.notifier.loop()

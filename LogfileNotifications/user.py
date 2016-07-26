@@ -123,7 +123,7 @@ class User:
         ret += '\n' \
                'last_seen: {}\n' \
                'quiet_until: {}\n' \
-               'online: {}'.format(TelegramBot.formatDate(self.last_seen),
-                                   TelegramBot.formatDate(self.quiet_until),
+               'online: {}'.format(TelegramBot.format_date(self.last_seen),
+                                   TelegramBot.format_date(self.quiet_until),
                                    self.online)
         return ret
