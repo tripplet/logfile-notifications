@@ -1,5 +1,19 @@
 # Logfile Notifications
 
+### Features
+
+- Supports multiple log files
+- Trigger lines in logfiles based on regex
+- Service can be controlled interactively via the Telegram bot
+- Disable notifications for certain time
+- Administrator users can change the config via Telegram
+
+#### Supported notification services
+- [Notify My Android](http://www.notifymyandroid.com/)
+- [Pushover](https://pushover.net/)
+- [Pushbullet](https://www.pushbullet.com/)
+- [Telegram bot](https://telegram.org/)
+
 
 ### Install
 
