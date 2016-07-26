@@ -21,7 +21,7 @@
 
 ### Using the docker image
 
-1. Get docker image
+1. Pull the image from dockerhub
    - `docker pull ttobias/logfile-notifications`
 
    - https://hub.docker.com/r/ttobias/logfile-notifications/
