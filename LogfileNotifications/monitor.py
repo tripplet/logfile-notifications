@@ -26,6 +26,7 @@ class Monitor:
         # create telegram bot
         if 'telegram_bot_token' in config:
             self.tgbot = NotificationBot(config, self.users)
+            self.tgbot.start()
             User.telegram_bot = self.tgbot
 
         # override default regex
