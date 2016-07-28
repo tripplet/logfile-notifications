@@ -13,3 +13,4 @@ COPY . script
 RUN pip install -r script/requirements.txt
 
 ENTRYPOINT ['python', '/script/notifications.py']
+CMD ['script/config.yaml']
