@@ -18,7 +18,7 @@ def main():
     with open(sys.argv[1]) as fp:
         config = yaml.load(fp)
 
-    print('Logfile monitoring running (v' + TelegramBot.get_version(use_caller_version=True, nb_levels_above=1) + ')')
+    print('Logfile monitoring running (v' + TelegramBot.get_version() + ')')
     m = LogfileNotifications.Monitor(config)
     m.loop()
 
