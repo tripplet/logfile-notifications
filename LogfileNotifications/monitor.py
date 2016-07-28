@@ -45,6 +45,7 @@ class Monitor:
             for sv in config['server_logs']:
                     fw = FileWatcher(sv, self)
                     self.server_logs[fw.watch_path] = fw
+        print('Finished processing status of log files')
 
         # inform users about restart
         for user in self.users:

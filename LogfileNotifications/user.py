@@ -63,7 +63,7 @@ class User:
                 self.send_pushover(title, message)
 
             elif method == 'telegram' and 'telegram_chat_id' in self.cfg and User.telegram_bot is not None:
-                User.telegram_bot.sendMessage(chat_id=self.cfg['telegram_chat_id'],
+                User.telegram_bot.send_message(chat_id=self.cfg['telegram_chat_id'],
                                               text="{}: {}".format(title, message))
 
     def handle_event(self, new_user, server_name, event_name, check_field):
