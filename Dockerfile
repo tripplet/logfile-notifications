@@ -2,13 +2,11 @@
 # Dockerfile to build logfile-notifications container images
 # Based on python
 ############################################################
-FROM python
+FROM python:3-alpine
 
 # File Author / Maintainer
-MAINTAINER TopCat_TC
+MAINTAINER ttobias
 
-RUN apt-get update
-RUN pip install --upgrade pip
 COPY . script
 RUN pip install -r script/requirements.txt
 
