@@ -12,4 +12,4 @@ RUN pip install --upgrade pip
 COPY . script
 RUN pip install -r script/requirements.txt
 
-CMD script/notifications.py script/config.yaml
+ENTRYPOINT ['python', '/script/notifications.py']
