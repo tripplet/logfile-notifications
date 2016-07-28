@@ -6,8 +6,6 @@ from datetime import datetime
 import sys
 
 import pynma
-from pushbullet import Pushbullet
-
 from .bot import TelegramBot
 
 
@@ -56,9 +54,6 @@ class User:
             if method == 'nma' and 'nma_key' in self.cfg:
                 self.nma.push('MinecraftServer', title + ': ' + message)
 
-            elif method == 'pushbullet' and 'pushbullet_token' in self.cfg:
-                self.send_pushbullet(title, message)
-
             elif method == 'pushover' and 'pushover_token' in self.cfg:
                 self.send_pushover(title, message)
 
@@ -98,15 +93,6 @@ class User:
                 self.online = True
             elif event_name == 'Logout':
                 self.online = False
-
-    def send_pushbullet(self, title, message):
-        pb = Pushbullet(self.cfg['pushbullet_token'])
-
-        selected_device = None  # All devices
-
-        if 'pushbullet_device' in self.cfg:
-            selected_device = next(dev for dev in pb.devices if dev.nickname == self.cfg['pushbullet_device'])
-        pb.push_note(title, message, device=selected_device)
 
     def send_pushover(self, title, message):
         conn = http.client.HTTPSConnection('api.pushover.net:443')

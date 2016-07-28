@@ -11,7 +11,6 @@
 #### Supported notification services
 - [Notify My Android](http://www.notifymyandroid.com/)
 - [Pushover](https://pushover.net/)
-- [Pushbullet](https://www.pushbullet.com/)
 - [Telegram bot](https://telegram.org/)
 
 
