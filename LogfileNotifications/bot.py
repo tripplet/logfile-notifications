@@ -36,13 +36,16 @@ class NotificationBot(TelegramBot):
                                                 one_time_keyboard=True)
 
     def __init__(self, config, users):
-        super().__init__(config, use_caller_version=True)
+        super().__init__(config)
+        self.ready = False
         self.users = users
 
-        self.dispatcher.add_handler(CommandHandler("status", self.cmd_status))
-        self.dispatcher.add_handler(CommandHandler("settings", self.cmd_settings))
-        self.dispatcher.add_handler(CommandHandler("quiet", self.cmd_quiet))
-        self.dispatcher.add_handler(CommandHandler("broadcast", self.cmd_broadcast))
+        if self.dispatcher is not None:
+            self.dispatcher.add_handler(CommandHandler("status", self.cmd_status))
+            self.dispatcher.add_handler(CommandHandler("settings", self.cmd_settings))
+            self.dispatcher.add_handler(CommandHandler("quiet", self.cmd_quiet))
+            self.dispatcher.add_handler(CommandHandler("broadcast", self.cmd_broadcast))
+            self.ready = True
 
     def _reload_config_file(self):
         self.cfg = self.config_file
