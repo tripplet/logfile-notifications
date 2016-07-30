@@ -1,4 +1,6 @@
 import os
+import re
+
 import pyinotify
 
 
@@ -20,16 +22,18 @@ class EventHandler(pyinotify.ProcessEvent):
         lines = new_lines.split('\n')
 
         for line in lines:
-            EventHandler.monitor.handle_newline_event(line, log_file.name)
+            EventHandler.monitor.handle_newline_event(line, log_file)
 
 
 class FileWatcher:
     watch_manager = pyinotify.WatchManager()
     notifier = pyinotify.Notifier(watch_manager, EventHandler())
 
-    def __init__(self, log_entry, monitor):
-        self.path = log_entry['path']
-        self.name = log_entry['name']
+    def __init__(self, entry, regex, monitor):
+        self.path = entry['path']
+        self.name = entry['name']
+        self.login = re.compile(regex[entry['regex']['login']])
+        self.logout = re.compile(regex[entry['regex']['logout']])
 
         # Complete update
         self.positions = {} 

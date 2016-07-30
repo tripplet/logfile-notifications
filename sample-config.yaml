@@ -2,19 +2,21 @@
 
 telegram_bot_token: accesstoken
 
-server_logs:
-  - name: Server 1
-    path: /complete/path/to/log/file.log
+regex:
+  demo_in: 1\s(.+)
+  demo_out: 2\s(.+)
 
-  - name: Server 2
-    path: /another/path/to/log/file.log
+logfiles:
+  - name: Server 1
+    path: /test
+    regex: {login: demo_in, logout: demo_out}
 
 users:
   - name: username
     enabled: true
     login_msg: true
     logout_msg: true
-    search: MinecraftNickName
+    nicknames: [nickname1, 'nickname_2']
     pushover_key: key here
     pushover_token: token
     telegram_chat_id: chatidhere

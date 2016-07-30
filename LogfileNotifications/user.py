@@ -61,38 +61,37 @@ class User:
                 User.telegram_bot.send_message(chat_id=self.cfg['telegram_chat_id'],
                                               text="{}: {}".format(title, message))
 
-    def handle_event(self, new_user, server_name, event_name, check_field):
-        if not self.cfg['search'] in new_user:
+    def handle_event(self, event_nickname, server_name, event_name, check_field):
+        if event_nickname in self.cfg['nicknames']:
+            # Nickname belonged to this user
+            self.last_seen = datetime.now()
+            if event_name == 'Login':
+                self.online = datetime.now()
+            elif event_name == 'Logout':
+                self.online = False
+        else:
             if self.cfg[check_field]:
-
                 if event_name == 'Login':
-                    # Cancel offline event for new_user
+                    # Cancel offline event for nickname
                     # And don't send online event
-                    if new_user in self.offline_events:
+                    if event_nickname in self.offline_events:
                         print('-> %s (canceled)' % (self.cfg['name']))
                         try:
-                            self.push_scheduler.cancel(self.offline_events.pop(new_user))
+                            self.push_scheduler.cancel(self.offline_events.pop(event_nickname))
                         except ValueError as err:
                             print('Error' + str(err))
 
                         return
                     title = 'Login ({})'.format(server_name)
-                    self.push(title, new_user)
+                    self.push(title, event_nickname)
                 else:
                     title = event_name
 
                     # Delay offline event
                     if self.should_send_push():
                         print('-> %s (delayed)' % (self.cfg['name']))
-                        event = self.push_scheduler.enter(30, 1, self.push, (title, new_user))
-                        self.offline_events[new_user] = event
-
-        else:
-            self.last_seen = datetime.now()
-            if event_name == 'Login':
-                self.online = True
-            elif event_name == 'Logout':
-                self.online = False
+                        event = self.push_scheduler.enter(30, 1, self.push, (title, event_nickname))
+                        self.offline_events[event_nickname] = event
 
     def send_pushover(self, title, message):
         conn = http.client.HTTPSConnection('api.pushover.net:443')
@@ -111,5 +110,5 @@ class User:
                'quiet_until: {}\n' \
                'online: {}'.format(TelegramBot.format_date(self.last_seen),
                                    TelegramBot.format_date(self.quiet_until),
-                                   self.online)
+                                   bool(self.online))
         return ret

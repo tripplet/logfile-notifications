@@ -10,12 +10,9 @@ from .bot import NotificationBot
 
 
 class Monitor:
-    user_login_regex = re.compile('\[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) joined the game')
-    user_logout_regex = re.compile('\[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) left the game')
-
     def __init__(self, config):
         self.users = []
-        self.server_logs = dict()
+        self.server_logs = {}
         self.tgbot = None
         self.push_scheduler = sched.scheduler()
 
@@ -31,23 +28,17 @@ class Monitor:
                 self.tgbot.start()
                 User.telegram_bot = self.tgbot
 
-        # override default regex
-        if 'user_login_regex' in config:
-            Monitor.user_login_regex = re.compile(config['user_login_regex'])
-        if 'user_logout_regex' in config:
-            Monitor.user_logout_regex = re.compile(config['user_logout_regex'])
-
         # start scheduler loop
         t = threading.Thread(target=self.scheduler_loop)
         t.start()
 
         # create inotify listener
-        if 'server_logs' in config:
+        if 'logfiles' in config:
             from .logfile import FileWatcher
-            for sv in config['server_logs']:
-                    fw = FileWatcher(sv, self)
-                    self.server_logs[fw.watch_path] = fw
-        print('Finished processing status of log files')
+            for log_file in config['logfiles']:
+                watcher = FileWatcher(log_file, config['regex'], self)
+                self.server_logs[watcher.watch_path] = watcher
+            print('Finished processing status of log files')
 
         # inform users about restart
         for user in self.users:
@@ -72,15 +63,15 @@ class Monitor:
             self.push_scheduler.run()
             time.sleep(1)
 
-    def handle_newline_event(self, line, event_provider):
+    def handle_newline_event(self, line, event):
         if line == '':
             return
 
-        result_login = Monitor.user_login_regex.search(line)
-        result_logout = Monitor.user_logout_regex.search(line)
+        result_login = event.login.search(line)
+        result_logout = event.logout.search(line)
 
         if result_login is not None:
-            print('%s -- Login (%s) %s' % (str(datetime.now()), event_provider, result_login.group(1)))
+            print('%s -- Login (%s) %s' % (str(datetime.now()), event.name, result_login.group(1)))
 
         if result_logout is not None:
             print('%s -- Logout %s' % (str(datetime.now()), result_logout.group(1)))
@@ -89,7 +80,7 @@ class Monitor:
 
         for cur_user in self.users:
             if result_login is not None:
-                cur_user.handle_event(result_login.group(1), event_provider, 'Login', 'login_msg')
+                cur_user.handle_event(result_login.group(1), event.name, 'Login', 'login_msg')
 
             if result_logout is not None:
-                cur_user.handle_event(result_logout.group(1), event_provider, 'Logout', 'logout_msg')
+                cur_user.handle_event(result_logout.group(1), event.name, 'Logout', 'logout_msg')
