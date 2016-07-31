@@ -45,7 +45,7 @@ class FileWatcher:
         else:
             self.watch_path = os.path.dirname(self.path)
 
-        FileWatcher.watch_manager.schedule(EventHandler(), self.watch_path, recursive=True)
+        FileWatcher.watch_manager.schedule(EventHandler(), self.watch_path, recursive=False)
 
     def update_position(self, path):
         if os.path.isdir(path):
