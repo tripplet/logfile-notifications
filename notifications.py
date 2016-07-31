@@ -2,9 +2,20 @@
 
 import sys
 import yaml
+import locale
+import logging
 
 import LogfileNotifications
 from bothelper import TelegramBot
+
+# German time formatting
+try:
+    locale.setlocale(locale.LC_TIME, 'de_DE')
+except locale.Error as exp:
+    try:
+        locale.setlocale(locale.LC_TIME, 'de_DE.utf8')
+    except locale.Error as exp:
+        pass
 
 #######################################################################################
 #######################################################################################
@@ -18,9 +29,23 @@ def main():
     with open(sys.argv[1]) as fp:
         config = yaml.load(fp)
 
-    print('Logfile monitoring running (version: ' + TelegramBot.get_version() + ')')
+    log_format = '%(asctime)s - [%(name)s] %(levelname)-5.5s - %(message)s'
+    log_formatter = logging.Formatter(log_format)
+
+    logging.basicConfig(level=config['logging']['level'],
+                        format=log_format,
+                        datefmt='%Y-%m-%d %H:%M:%S')
+
+    if 'file' in config['logging']:
+        file_handler = logging.FileHandler(config['logging']['file'])
+        file_handler.setFormatter(log_formatter)
+        logging.getLogger().addHandler(file_handler)
+
+    logging.info('Logfile monitoring running (version: ' + TelegramBot.get_version() + ')')
     m = LogfileNotifications.Monitor(config)
     m.loop()
+
+    logging.manager.loggerDict()
 
 if __name__ == '__main__':
     main()

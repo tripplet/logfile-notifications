@@ -11,6 +11,7 @@ from .bot import TelegramBot
 
 class User:
     telegram_bot = None
+    logout_delay = 30  # delay in seconds for login events
 
     def __init__(self, user_config, push_scheduler):
         self.online = False
@@ -33,17 +34,21 @@ class User:
             return True
 
     def push(self, title, message, ignore_online=False):
+        # Remove this offline msg from offline_events queue
+        if title == 'Logout' and message in self.offline_events:
+            del self.offline_events[message]
+
         if not self.should_send_push(ignore_online):
             return
 
-        thr = threading.Thread(target=self.push_synchron, args=(title, message, ignore_online))
+        thr = threading.Thread(target=self.push_sync, args=(title, message, ignore_online))
         thr.start()
 
     def inform_start(self):
         if 'start_msg' in self.cfg and self.cfg['start_msg'] is True:
-            self.push_synchron('Info', 'Restart')
+            self.push_sync('Info', 'Restart')
 
-    def push_synchron(self, title, message, ignore_online=False):
+    def push_sync(self, title, message, ignore_online=False):
         if not self.should_send_push(ignore_online):
             return
 
@@ -59,7 +64,7 @@ class User:
 
             elif method == 'telegram' and 'telegram_chat_id' in self.cfg and User.telegram_bot is not None:
                 User.telegram_bot.send_message(chat_id=self.cfg['telegram_chat_id'],
-                                              text="{}: {}".format(title, message))
+                                               text="{}: {}".format(title, message))
 
     def handle_event(self, event_nickname, server_name, event_name, check_field):
         if event_nickname in self.cfg['nicknames']:
@@ -79,18 +84,16 @@ class User:
                         try:
                             self.push_scheduler.cancel(self.offline_events.pop(event_nickname))
                         except ValueError as err:
-                            print('Error' + str(err))
+                            print('Error remving delayed event: ' + str(err))
 
                         return
                     title = 'Login ({})'.format(server_name)
                     self.push(title, event_nickname)
                 else:
-                    title = event_name
-
-                    # Delay offline event
+                    # Delay sending the logoff event (30s)
                     if self.should_send_push():
-                        print('-> %s (delayed)' % (self.cfg['name']))
-                        event = self.push_scheduler.enter(30, 1, self.push, (title, event_nickname))
+                        print('-> %s (delayed logoff msg)' % (self.cfg['name']))
+                        event = self.push_scheduler.enter(User.logout_delay, 1, self.push, (event_name, event_nickname))
                         self.offline_events[event_nickname] = event
 
     def send_pushover(self, title, message):

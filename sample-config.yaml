@@ -2,6 +2,10 @@
 
 telegram_bot_token: accesstoken
 
+logging:
+  level: INFO
+  # file: test.log
+
 regex:
   demo_in: 1\s(.+)
   demo_out: 2\s(.+)

@@ -4,9 +4,11 @@ import threading
 from datetime import datetime
 import sys
 import re
+import logging
 
 from .user import User
 from .bot import NotificationBot
+from .logfile import FileWatcher
 
 
 class Monitor:
@@ -32,13 +34,13 @@ class Monitor:
         t = threading.Thread(target=self.scheduler_loop)
         t.start()
 
-        # create inotify listener
+        # create file event watchers
         if 'logfiles' in config:
-            from .logfile import FileWatcher
             for log_file in config['logfiles']:
                 watcher = FileWatcher(log_file, config['regex'], self)
                 self.server_logs[watcher.watch_path] = watcher
-            print('Finished processing status of log files')
+            FileWatcher.watch_manager.start()
+            logging.info('Finished processing status of log files')
 
         # inform users about restart
         for user in self.users:
@@ -48,14 +50,25 @@ class Monitor:
         if len(self.server_logs) == 0:
             self.read_stdin()
         else:
-            from .logfile import FileWatcher
-            FileWatcher.loop()  # start file notification loop
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                FileWatcher.watch_manager.stop()
+            FileWatcher.watch_manager.join()
 
     def read_stdin(self):
         """Read from stdin for debugging"""
+
+        stdin_events = object()
+        stdin_events.name = 'stdin'
+        stdin_events.login = re.compile('1\s(.+)')
+        stdin_events.logout = re.compile('2\s(.+)')
+
         while True:
             line = input('$ ')
-            self.handle_newline_event(line, 'stdin')
+            # noinspection PyTypeChecker
+            self.handle_newline_event(line, stdin_events)
 
     def scheduler_loop(self):
         """Infinite loop for executing scheduled push events."""
@@ -71,10 +84,10 @@ class Monitor:
         result_logout = event.logout.search(line)
 
         if result_login is not None:
-            print('%s -- Login (%s) %s' % (str(datetime.now()), event.name, result_login.group(1)))
+            logging.info("Login: '%s' on '%s'" % (result_login.group(1), event.name))
 
         if result_logout is not None:
-            print('%s -- Logout %s' % (str(datetime.now()), result_logout.group(1)))
+            logging.info("Logout: '%s' on '%s'" % (result_login.group(1), event.name))
 
         sys.stdout.flush()
 

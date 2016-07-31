@@ -1,25 +1,11 @@
 #!/usr/bin/env python3
 
-import locale
-import logging
 from datetime import datetime, timedelta
 
 import telegram  # pip install python-telegram-bot
 from telegram.ext import CommandHandler
 
 from bothelper import TelegramBot
-
-# German time formatting
-try:
-    locale.setlocale(locale.LC_TIME, 'de_DE')
-except locale.Error as exp:
-    try:
-        locale.setlocale(locale.LC_TIME, 'de_DE.utf8')
-    except locale.Error as exp:
-        pass
-
-logging.basicConfig(level=logging.ERROR,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 class NotificationBot(TelegramBot):
@@ -46,9 +32,6 @@ class NotificationBot(TelegramBot):
             self.dispatcher.add_handler(CommandHandler("quiet", self.cmd_quiet))
             self.dispatcher.add_handler(CommandHandler("broadcast", self.cmd_broadcast))
             self.ready = True
-
-    def _reload_config_file(self):
-        self.cfg = self.config_file
 
     def is_authorized(self, bot, update):
         authorized_user = [user.cfg["telegram_chat_id"] for user in self.users if "telegram_chat_id" in user.cfg]
@@ -84,7 +67,7 @@ class NotificationBot(TelegramBot):
         # Function handling the response
         def broadcast_response(_, resp_update):
             for user in self.users:
-                user.push_synchron('Broadcast', resp_update.message.text, ignore_online=True)
+                user.push_sync('Broadcast', resp_update.message.text, ignore_online=True)
 
             self.send_message(resp_update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
             self.set_handle_response(resp_update.message.chat_id, None)
@@ -99,11 +82,9 @@ class NotificationBot(TelegramBot):
         for user in self.users:
             if user.cfg['enabled']:
                 if user.online:
-                    response += '{}: Online (Seit {} min)\n'.format(user.cfg['name'],
-                                                  int((datetime.now() - user.online).total_seconds() / 60))
+                    response += '{}: Online (Seit {} min)\n'.format(user.cfg['name'], int((datetime.now() - user.online).total_seconds() / 60))
                 else:
-                    response += '{}: Offline (Zuletzt online {})\n'.format(user.cfg['name'],
-                                                  TelegramBot.format_date(user.last_seen))
+                    response += '{}: Offline (Zuletzt online {})\n'.format(user.cfg['name'], TelegramBot.format_date(user.last_seen))
 
         self.send_message(update.message.chat_id, text=response)
 

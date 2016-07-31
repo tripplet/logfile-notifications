@@ -1,24 +1,24 @@
 import os
 import re
+import logging
 
-import pyinotify
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 
-class EventHandler(pyinotify.ProcessEvent):
+class EventHandler(FileSystemEventHandler):
     monitor = None
 
-    def __init__(self, *args, **kwargs):
-        super(EventHandler, self).__init__(*args, **kwargs)
+    def on_created(self, event):
+        self.on_modified(event)
 
-    # noinspection PyPep8Naming
-    @staticmethod
-    def process_IN_MODIFY(event):
-        if os.path.dirname(event.pathname) not in EventHandler.monitor.server_logs:
+    def on_modified(self, event):
+        if os.path.dirname(event.src_path) not in EventHandler.monitor.server_logs:
             return
 
-        log_file = EventHandler.monitor.server_logs[os.path.dirname(event.pathname)]
+        log_file = EventHandler.monitor.server_logs[os.path.dirname(event.src_path)]
 
-        new_lines = log_file.update_position(event.pathname)
+        new_lines = log_file.update_position(event.src_path)
         lines = new_lines.split('\n')
 
         for line in lines:
@@ -26,8 +26,7 @@ class EventHandler(pyinotify.ProcessEvent):
 
 
 class FileWatcher:
-    watch_manager = pyinotify.WatchManager()
-    notifier = pyinotify.Notifier(watch_manager, EventHandler())
+    watch_manager = Observer()
 
     def __init__(self, entry, regex, monitor):
         self.path = entry['path']
@@ -46,7 +45,7 @@ class FileWatcher:
         else:
             self.watch_path = os.path.dirname(self.path)
 
-        FileWatcher.watch_manager.add_watch(self.watch_path, pyinotify.IN_MODIFY, rec=False)
+        FileWatcher.watch_manager.schedule(EventHandler(), self.watch_path, recursive=True)
 
     def update_position(self, path):
         if os.path.isdir(path):
@@ -66,14 +65,19 @@ class FileWatcher:
                 self.positions[file_path] = 0
 
             f.seek(self.positions[file_path])
-            new_lines = f.read()
+            try:
+                new_lines = f.read()
+            except UnicodeDecodeError as ex:
+                logging.info("Ignoring UnicodeDecodeError in '{}': ".format(file_path, str(ex)))
+                self.positions[file_path] = os.stat(file_path).st_size
+                return ''
+            except Exception as ex:
+                logging.error("Error while reading file '{}': {}".format(file_path, str(ex)))
+                self.positions[file_path] = os.stat(file_path).st_size
+                return ''
 
             last_n = new_lines.rfind('\n')
             if last_n >= 0:
                 self.positions[file_path] += last_n + 1
 
             return new_lines
-
-    @staticmethod
-    def loop():
-        FileWatcher.notifier.loop()
