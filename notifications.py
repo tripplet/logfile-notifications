@@ -45,7 +45,5 @@ def main():
     m = LogfileNotifications.Monitor(config)
     m.loop()
 
-    logging.manager.loggerDict()
-
 if __name__ == '__main__':
     main()
