@@ -26,6 +26,8 @@ class EventHandler(FileSystemEventHandler):
 
 
 class FileWatcher:
+    log = logging.getLogger(__name__)
+
     watch_manager = Observer()
 
     def __init__(self, entry, regex, monitor):
@@ -68,11 +70,11 @@ class FileWatcher:
             try:
                 new_lines = f.read()
             except UnicodeDecodeError as ex:
-                logging.info("Ignoring UnicodeDecodeError in '{}': ".format(file_path, str(ex)))
+                FileWatcher.log.info("Ignoring UnicodeDecodeError in '{}': ".format(file_path, str(ex)))
                 self.positions[file_path] = os.stat(file_path).st_size
                 return ''
             except Exception as ex:
-                logging.error("Error while reading file '{}': {}".format(file_path, str(ex)))
+                FileWatcher.log.error("Error while reading file '{}': {}".format(file_path, str(ex)))
                 self.positions[file_path] = os.stat(file_path).st_size
                 return ''
 

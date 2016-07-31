@@ -12,6 +12,8 @@ from .logfile import FileWatcher
 
 
 class Monitor:
+    log = logging.getLogger(__name__)
+
     def __init__(self, config):
         self.users = []
         self.server_logs = {}
@@ -40,7 +42,7 @@ class Monitor:
                 watcher = FileWatcher(log_file, config['regex'], self)
                 self.server_logs[watcher.watch_path] = watcher
             FileWatcher.watch_manager.start()
-            logging.info('Finished processing status of log files')
+            Monitor.log.info('Finished processing status of log files')
 
         # inform users about restart
         for user in self.users:
@@ -84,10 +86,10 @@ class Monitor:
         result_logout = event.logout.search(line)
 
         if result_login is not None:
-            logging.info("Login: '%s' on '%s'" % (result_login.group(1), event.name))
+            Monitor.log.info("Login: '{}' on '{}'".format(result_login.group(1), event.name))
 
         if result_logout is not None:
-            logging.info("Logout: '%s' on '%s'" % (result_login.group(1), event.name))
+            Monitor.log.info("Logout: '{}' on '{}'".format(result_logout.group(1), event.name))
 
         sys.stdout.flush()
 

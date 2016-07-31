@@ -4,6 +4,7 @@ import urllib.parse
 import threading
 from datetime import datetime
 import sys
+import logging
 
 import pynma
 from .bot import TelegramBot
@@ -12,6 +13,7 @@ from .bot import TelegramBot
 class User:
     telegram_bot = None
     logout_delay = 30  # delay in seconds for login events
+    log = logging.getLogger(__name__)
 
     def __init__(self, user_config, push_scheduler):
         self.online = False
@@ -52,7 +54,7 @@ class User:
         if not self.should_send_push(ignore_online):
             return
 
-        print('-> %s' % self.cfg['name'])
+        User.log.info('Informing {}'.format(self.cfg['name']))
         sys.stdout.flush()
 
         for method in self.cfg['notify_with']:
@@ -80,11 +82,11 @@ class User:
                     # Cancel offline event for nickname
                     # And don't send online event
                     if event_nickname in self.offline_events:
-                        print('-> %s (canceled)' % (self.cfg['name']))
+                        User.log.info('Logoff msg to {} canceled'.format(self.cfg['name']))
                         try:
                             self.push_scheduler.cancel(self.offline_events.pop(event_nickname))
                         except ValueError as err:
-                            print('Error remving delayed event: ' + str(err))
+                            User.log.error('Error removing delayed event: ' + str(err))
 
                         return
                     title = 'Login ({})'.format(server_name)
@@ -92,7 +94,7 @@ class User:
                 else:
                     # Delay sending the logoff event (30s)
                     if self.should_send_push():
-                        print('-> %s (delayed logoff msg)' % (self.cfg['name']))
+                        User.log.info('Scheduling Logoff msg to {} ({} sec)'.format(self.cfg['name'], User.logout_delay))
                         event = self.push_scheduler.enter(User.logout_delay, 1, self.push, (event_name, event_nickname))
                         self.offline_events[event_nickname] = event
 

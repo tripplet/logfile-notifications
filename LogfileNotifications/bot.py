@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime, timedelta
+import logging
 
 import telegram  # pip install python-telegram-bot
 from telegram.ext import CommandHandler
@@ -9,6 +10,8 @@ from bothelper import TelegramBot
 
 
 class NotificationBot(TelegramBot):
+    log = logging.getLogger(__name__)
+
     _quiet_times = {
         '4 Stunden': lambda: datetime.now() + timedelta(hours=4),
         'Bis Morgen': lambda: (datetime.now() + timedelta(days=1)).replace(hour=6, minute=0, second=0, microsecond=0),
@@ -37,7 +40,7 @@ class NotificationBot(TelegramBot):
         authorized_user = [user.cfg["telegram_chat_id"] for user in self.users if "telegram_chat_id" in user.cfg]
 
         if update.message.chat_id not in authorized_user:
-            self.send_message(update.message.chat_id, text='Unauthorized: %d' % update.message.chat_id)
+            self.send_message(update.message.chat_id, text='Unauthorized: {}'.format(update.message.chat_id))
             return False
 
         # Received a valid message from an authorized user
