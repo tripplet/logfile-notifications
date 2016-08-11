@@ -19,6 +19,7 @@ users:
   - name: username
     enabled: true
     login_msg: true
+    start_msg: true
     logout_msg: true
     nicknames: [nickname1, 'nickname_2']
     pushover_key: key here
