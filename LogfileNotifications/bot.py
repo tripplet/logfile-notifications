@@ -87,9 +87,11 @@ class NotificationBot(TelegramBot):
         for user in self.users:
             if user.cfg['enabled']:
                 if user.online:
-                    response += '{}: Online (Seit {} min)\n'.format(user.cfg['name'], int((datetime.now() - user.online).total_seconds() / 60))
+                    response += '{}: Online (Seit {} min)\n'.format(user.cfg['name'], int(
+                        (datetime.now() - user.online).total_seconds() / 60))
                 else:
-                    response += '{}: Offline (Zuletzt online {})\n'.format(user.cfg['name'], TelegramBot.format_date(user.last_seen))
+                    response += '{}: Offline (Zuletzt online {})\n'.format(user.cfg['name'],
+                                                                           TelegramBot.format_date(user.last_seen))
 
         self.send_message(update.message.chat_id, text=response)
 

@@ -89,7 +89,8 @@ class User:
                 else:
                     # Delay sending the logoff event (30s)
                     if self.should_send_push():
-                        User.log.info('Scheduling Logoff msg to {} ({} sec)'.format(self.cfg['name'], User.logout_delay))
+                        User.log.info(
+                            'Scheduling Logoff msg to {} ({} sec)'.format(self.cfg['name'], User.logout_delay))
                         event = self.push_scheduler.enter(User.logout_delay, 1, self.push, (event_name, event_nickname))
                         self.offline_events[event_nickname] = event
 
