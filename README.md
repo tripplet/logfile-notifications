@@ -26,10 +26,12 @@
 3. Install requirements:
    `pip install -r requirements.txt`
 
-4. Copy config file
+4. Copy sample config
    `cp sample-config.yaml config.yaml`
 
-5. Run
+5. Modify the config file to your needs
+
+6. Run
    - `python notifications.py config.yaml`
    Or with virtual environment
    - `venv/bin/python notifications.py config.yaml`

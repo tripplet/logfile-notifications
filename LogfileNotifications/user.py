@@ -54,7 +54,7 @@ class User:
 
         for method in self.cfg['notify_with']:
             if method == 'nma' and 'nma_key' in self.cfg:
-                self.send_nma(title + ': ' + message)
+                self.send_nma('Notification', title + ': ' + message)
 
             elif method == 'pushover' and 'pushover_token' in self.cfg:
                 self.send_pushover(title, message)
@@ -107,7 +107,7 @@ class User:
         if self.nma is None and 'nma_key' in self.cfg:
             self.nma = pynma.PyNMA([self.cfg['nma_key']])
 
-        self.nma.push('Notification', message)
+        self.nma.push(title, message)
 
     def __str__(self):
         ret = pprint.pformat(self.cfg, indent=4)

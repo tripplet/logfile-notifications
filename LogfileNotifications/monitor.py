@@ -1,7 +1,6 @@
 import sched
 import time
 import threading
-from datetime import datetime
 import sys
 import re
 import logging
