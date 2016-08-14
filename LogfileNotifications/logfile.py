@@ -6,59 +6,48 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 
-class EventHandler(FileSystemEventHandler):
-    monitor = None
-
-    def on_created(self, event):
-        self.on_modified(event)
-
-    def on_modified(self, event):
-        if os.path.dirname(event.src_path) not in EventHandler.monitor.server_logs:
-            return
-
-        log_file = EventHandler.monitor.server_logs[os.path.dirname(event.src_path)]
-
-        new_lines = log_file.update_position(event.src_path)
-        lines = new_lines.split('\n')
-
-        for line in lines:
-            EventHandler.monitor.handle_newline_event(line, log_file)
-
-
-class FileWatcher:
+class FileWatcher(FileSystemEventHandler):
     log = logging.getLogger(__name__)
-
     watch_manager = Observer()
 
-    def __init__(self, entry, regex, monitor):
+    def __init__(self, entry, regex, handle_newline_event):
         self.path = entry['path']
         self.name = entry['name']
         self.login = re.compile(regex[entry['regex']['login']])
         self.logout = re.compile(regex[entry['regex']['logout']])
+        self.handle_newline_event = handle_newline_event
 
         # Complete update
-        self.positions = {} 
+        self.positions = {}
         self.update_position(self.path)
-
-        EventHandler.monitor = monitor
 
         if os.path.isdir(self.path):
             self.watch_path = self.path
         else:
             self.watch_path = os.path.dirname(self.path)
 
-        FileWatcher.watch_manager.schedule(EventHandler(), self.watch_path, recursive=False)
+        FileWatcher.watch_manager.schedule(self, self.watch_path, recursive=False)
+
+    def on_created(self, event):
+        self.on_modified(event)
+
+    def on_modified(self, event):
+        new_lines = self.update_position(event.src_path)
+        lines = new_lines.split('\n')
+
+        for line in lines:
+            self.handle_newline_event(line, self)
 
     def update_position(self, path):
         if os.path.isdir(path):
             for dir_entry in os.scandir(path):
                 if dir_entry.is_file():
-                    self.update_file_position(dir_entry.path)
+                    self._update_file_position(dir_entry.path)
             return ''
         else:
-            return self.update_file_position(path)
+            return self._update_file_position(path)
 
-    def update_file_position(self, file_path):
+    def _update_file_position(self, file_path):
         if file_path not in self.positions:
             self.positions[file_path] = 0
 

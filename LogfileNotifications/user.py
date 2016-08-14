@@ -3,7 +3,6 @@ import http.client
 import urllib.parse
 import threading
 from datetime import datetime
-import sys
 import logging
 
 import pynma
@@ -19,13 +18,10 @@ class User:
         self.online = False
         self.last_seen = None
         self.quiet_until = None
+        self.nma = None
         self.offline_events = dict()
-
         self.cfg = user_config
         self.push_scheduler = push_scheduler
-
-        if 'nma_key' in self.cfg:
-            self.nma = pynma.PyNMA([self.cfg['nma_key']])
 
     def should_send_push(self, ignore_online=False):
         if not self.cfg['enabled'] \
@@ -55,11 +51,10 @@ class User:
             return
 
         User.log.info('Informing {}'.format(self.cfg['name']))
-        sys.stdout.flush()
 
         for method in self.cfg['notify_with']:
             if method == 'nma' and 'nma_key' in self.cfg:
-                self.nma.push('MinecraftServer', title + ': ' + message)
+                self.send_nma(title + ': ' + message)
 
             elif method == 'pushover' and 'pushover_token' in self.cfg:
                 self.send_pushover(title, message)
@@ -107,6 +102,12 @@ class User:
             'title': title,
             'sound': 'none'}),
             {'Content-type': 'application/x-www-form-urlencoded'})
+
+    def send_nma(self, title, message):
+        if self.nma is None and 'nma_key' in self.cfg:
+            self.nma = pynma.PyNMA([self.cfg['nma_key']])
+
+        self.nma.push('Notification', message)
 
     def __str__(self):
         ret = pprint.pformat(self.cfg, indent=4)

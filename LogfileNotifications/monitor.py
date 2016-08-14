@@ -16,7 +16,7 @@ class Monitor:
 
     def __init__(self, config):
         self.users = []
-        self.server_logs = {}
+        self.server_logs = []
         self.tgbot = None
         self.push_scheduler = sched.scheduler()
 
@@ -39,8 +39,8 @@ class Monitor:
         # create file event watchers
         if 'logfiles' in config:
             for log_file in config['logfiles']:
-                watcher = FileWatcher(log_file, config['regex'], self)
-                self.server_logs[watcher.watch_path] = watcher
+                self.server_logs.append(FileWatcher(log_file, config['regex'], self.handle_newline_event))
+            # Start watching for changes
             FileWatcher.watch_manager.start()
             Monitor.log.info('Finished processing status of log files')
 
