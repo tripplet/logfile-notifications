@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
 import logging
 
-import telegram  # pip install python-telegram-bot
+import telegram
 from telegram.ext import CommandHandler
 
 from bothelper import TelegramBot

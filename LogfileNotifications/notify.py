@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import http.client
 import urllib.parse
 import logging

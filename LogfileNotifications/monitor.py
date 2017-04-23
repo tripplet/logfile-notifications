@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sched
 import time
 import threading
