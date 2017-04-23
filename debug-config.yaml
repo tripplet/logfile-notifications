@@ -6,7 +6,7 @@ admins: [username, asdasd]
 
 logging:
   level: INFO
-  file: /Users/ttobias/Developer/logfile-notifications/test.log
+  file: test.log
 
 regex:
   minecraft_login: \[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) joined the game
@@ -16,11 +16,11 @@ regex:
 
 logfiles:
   - name: Server 1
-    path: /Users/ttobias/Developer/logfile-notifications/test
+    path: testing/server1
     regex: {login: demo_in, logout: demo_out}
 
   - name: Server 2
-    path: /Users/ttobias/Developer/logfile-notifications/test2
+    path: testing/server2
     regex: {login: demo_in, logout: demo_out}
 
 users:

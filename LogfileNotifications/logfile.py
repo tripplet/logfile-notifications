@@ -13,7 +13,7 @@ class FileWatcher(FileSystemEventHandler):
     watch_manager = Observer()
 
     def __init__(self, entry, regex, handle_newline_event):
-        self.path = entry['path']
+        self.path = os.path.abspath(entry['path'])
         self.name = entry['name']
         self.login = re.compile(regex[entry['regex']['login']])
         self.logout = re.compile(regex[entry['regex']['logout']])

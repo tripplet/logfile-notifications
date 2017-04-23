@@ -1,8 +1,8 @@
 import tkinter as tk
 
 servers = {
-    1: 'test/test.log',
-    2: 'test2/test.log'
+    1: 'testing/server1/test.log',
+    2: 'testing/server2/test.log'
 }
 
 
