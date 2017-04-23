@@ -12,3 +12,6 @@ venv/
 
 # Personal config file
 config.yaml
+
+# Testing files
+testing/
