@@ -1,0 +1,55 @@
+# Remember to restart the service after changing the config file
+
+# telegram_bot_token:
+
+admins: [username, asdasd]
+
+logging:
+  level: INFO
+  file: /Users/ttobias/Developer/logfile-notifications/test.log
+
+regex:
+  minecraft_login: \[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) joined the game
+  minecraft_logout: \[[\d:]+\]\s\[[\w\s/]+\]:\s([\w]+) left the game
+  demo_in: i\s(.+)
+  demo_out: o\s(.+)
+
+logfiles:
+  - name: Server 1
+    path: /Users/ttobias/Developer/logfile-notifications/test
+    regex: {login: demo_in, logout: demo_out}
+
+  - name: Server 2
+    path: /Users/ttobias/Developer/logfile-notifications/test2
+    regex: {login: demo_in, logout: demo_out}
+
+users:
+  - name: Alice
+    nicknames: [alice]
+    enabled: true
+    login_msg: true
+    logout_msg: true
+    pushover_key: key here
+    pushover_token: token
+    telegram_chat_id: 3992980
+    notify_with: [debug]
+
+  - name: Bob
+    nicknames: [bob]
+    enabled: true
+    login_msg: true
+    logout_msg: true
+    pushover_key: key here
+    pushover_token: token
+    telegram_chat_id: key here
+    notify_with: [debug]
+
+  - name: Kyle
+    nicknames: [kyle]
+    enabled: true
+    login_msg: true
+    logout_msg: true
+    pushover_key: key here
+    pushover_token: token
+    telegram_chat_id: key here
+    notify_with: [debug]
