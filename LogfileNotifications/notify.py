@@ -66,5 +66,5 @@ class NotifyNma(Notify):
 class NotifyTelegram(Notify):
     def send(self, title, message):
         if 'telegram_chat_id' in self.user.cfg and self.user.telegram_bot is not None:
-            self.user.telegram_bot.send_message(chat_id=self.cfg['telegram_chat_id'],
+            self.user.telegram_bot.send_message(chat_id=self.user.cfg['telegram_chat_id'],
                                                 text="{}: {}".format(title, message))
