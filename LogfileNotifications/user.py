@@ -1,12 +1,10 @@
 import pprint
-import http.client
-import urllib.parse
 import threading
 from datetime import datetime
 import logging
 
-import pynma
 from .bot import TelegramBot
+from .notify import Notify
 
 
 class User:
@@ -50,18 +48,10 @@ class User:
         if not self.should_send_push(ignore_online):
             return
 
-        User.log.info('Informing {}'.format(self.cfg['name']))
+        User.log.debug('Informing {}'.format(self.cfg['name']))
 
         for method in self.cfg['notify_with']:
-            if method == 'nma' and 'nma_key' in self.cfg:
-                self.send_nma('Notification', title + ': ' + message)
-
-            elif method == 'pushover' and 'pushover_token' in self.cfg:
-                self.send_pushover(title, message)
-
-            elif method == 'telegram' and 'telegram_chat_id' in self.cfg and User.telegram_bot is not None:
-                User.telegram_bot.send_message(chat_id=self.cfg['telegram_chat_id'],
-                                               text="{}: {}".format(title, message))
+            Notify.notify(method, self, title, message)
 
     def handle_event(self, event_nickname, server_name, event_name, check_field):
         if event_nickname in self.cfg['nicknames']:
@@ -93,22 +83,6 @@ class User:
                             'Scheduling Logoff msg to {} ({} sec)'.format(self.cfg['name'], User.logout_delay))
                         event = self.push_scheduler.enter(User.logout_delay, 1, self.push, (event_name, event_nickname))
                         self.offline_events[event_nickname] = event
-
-    def send_pushover(self, title, message):
-        conn = http.client.HTTPSConnection('api.pushover.net:443')
-        conn.request('POST', '/1/messages.json', urllib.parse.urlencode({
-            'token': self.cfg['pushover_token'],
-            'user': self.cfg['pushover_key'],
-            'message': message,
-            'title': title,
-            'sound': 'none'}),
-            {'Content-type': 'application/x-www-form-urlencoded'})
-
-    def send_nma(self, title, message):
-        if self.nma is None and 'nma_key' in self.cfg:
-            self.nma = pynma.PyNMA([self.cfg['nma_key']])
-
-        self.nma.push(title, message)
 
     def __str__(self):
         ret = pprint.pformat(self.cfg, indent=4)
