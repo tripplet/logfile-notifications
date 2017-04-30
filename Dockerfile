@@ -7,15 +7,15 @@ FROM python:3-alpine
 # File Author / Maintainer
 MAINTAINER ttobias
 
-# Certificates for SSL
-RUN apk add --update ca-certificates
-
-# Copy script into container and install requirements
+# Copy script into container
 COPY . script
-RUN pip install -r script/requirements.txt
-
-# Save version
-RUN cat /script/.git/refs/heads/master > /script/.version
+ 
+RUN apk add --update ca-certificates && \
+    apk add git --virtual .build-deps git && \
+    pip install -r script/requirements.txt && \
+    cd /script/ && git describe --long --always --tags > /script/.version && \
+    apk del .build-deps && rm -rf /script/.git
 
 ENTRYPOINT ["python", "/script/notifications.py"]
 CMD ["config.yaml"]
+

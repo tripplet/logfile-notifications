@@ -1,0 +1,5 @@
+# Ignore file for docker (COPY & ADD commandfile for docker (COPY & ADD commands)
+debug-config.yaml
+debug-events.py
+README.md
+*.pyc
