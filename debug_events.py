@@ -5,7 +5,6 @@ servers = {
     2: 'testing/server2/test.log'
 }
 
-
 def event(server, login, user):
     with open(servers[server], 'at') as f:
         f.write('{} {}\n'.format('i' if login else 'o', user))
@@ -25,7 +24,7 @@ root = tk.Tk()
 root.title("LogfileNotifcations tests")
 user(root, 'alice')
 user(root, 'bob')
-user(root, 'kyle')
+user(root, 'carol')
 
 #root.QUIT = tk.Button(root, text="QUIT", fg='red', command=root.destroy).pack(side="bottom")
 

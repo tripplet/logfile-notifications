@@ -44,8 +44,8 @@ users:
     telegram_chat_id: key here
     notify_with: [debug]
 
-  - name: Kyle
-    nicknames: [kyle]
+  - name: Carol
+    nicknames: [carol]
     enabled: true
     login_msg: true
     logout_msg: true

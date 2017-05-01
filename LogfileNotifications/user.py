@@ -11,7 +11,7 @@ from .notify import Notify
 
 class User:
     telegram_bot = None
-    logout_delay = 30  # delay in seconds for login events
+    logout_delay = 30  # delay in seconds for logout events
     log = logging.getLogger(__name__)
 
     def __init__(self, user_config, push_scheduler):
