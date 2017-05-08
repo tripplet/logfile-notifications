@@ -31,7 +31,7 @@ users:
     logout_msg: true
     pushover_key: key here
     pushover_token: token
-    telegram_chat_id: 3992980
+    telegram_chat_id: key here
     notify_with: [debug]
 
   - name: Bob
