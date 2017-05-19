@@ -11,6 +11,7 @@ MAINTAINER ttobias
 COPY . script
  
 RUN apk add --update ca-certificates && \
+    apk add tzdata && \
     apk add git --virtual .build-deps git && \
     pip install -r script/requirements.txt && \
     cd /script/ && git describe --long --always --tags > /script/.version && \
