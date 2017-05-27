@@ -42,7 +42,7 @@ def main():
         file_handler.setFormatter(log_formatter)
         logging.getLogger().addHandler(file_handler)
 
-    logging.info('Logfile monitoring running (version: ' + TelegramBot.get_version() + ')')
+    logging.info('Logfile monitoring running - version: ' + TelegramBot.get_version())
     m = LogfileNotifications.Monitor(config)
     m.loop()
 
