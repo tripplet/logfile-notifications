@@ -31,6 +31,7 @@ class FileWatcher(FileSystemEventHandler):
         FileWatcher.watch_manager.schedule(self, self.watch_path, recursive=False)
 
     def on_created(self, event):
+        self.positions[event.src_path] = 0
         self.on_modified(event)
 
     def on_modified(self, event):
