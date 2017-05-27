@@ -53,7 +53,10 @@ class User:
         User.log.debug('Informing {}'.format(self.cfg['name']))
 
         for method in self.cfg['notify_with']:
-            Notify.notify(method, self, title, message)
+            try:
+                Notify.notify(method, self, title, message)
+            except Exception as exp:
+                User.log.error('Error sending notification to user {}: {}'.format(self.cfg['name'], exp))
 
     def handle_event(self, event_nickname, server_name, event_name, check_field):
         if event_nickname in self.cfg['nicknames']:
