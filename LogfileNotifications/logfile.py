@@ -36,7 +36,7 @@ class FileWatcher(FileSystemEventHandler):
 
     def on_modified(self, event):
         new_lines = self.update_position(event.src_path)
-        lines = new_lines.split('\n')
+        lines = new_lines.replace('\r', '').split('\n')
 
         for line in lines:
             self.handle_newline_event(line, self)
@@ -54,10 +54,10 @@ class FileWatcher(FileSystemEventHandler):
         if file_path not in self.positions:
             self.positions[file_path] = 0
 
-        with open(file_path) as f:
-            if self.positions[file_path] > os.stat(file_path).st_size:
-                self.positions[file_path] = 0
+        if self.positions[file_path] > os.stat(file_path).st_size:
+            self.positions[file_path] = 0
 
+        with open(file_path, 'rb') as f:
             f.seek(self.positions[file_path])
             try:
                 new_lines = f.read()
@@ -70,8 +70,9 @@ class FileWatcher(FileSystemEventHandler):
                 self.positions[file_path] = os.stat(file_path).st_size
                 return ''
 
-            last_n = new_lines.rfind('\n')
-            if last_n >= 0:
-                self.positions[file_path] += last_n + 1
+        last_n = new_lines.rfind(b'\n')
+        if last_n >= 0:
+            self.positions[file_path] += last_n + 1
 
-            return new_lines
+        FileWatcher.log.debug('New lines in logfile {}:\n{}'.format(file_path, new_lines.decode('ascii')))
+        return new_lines.decode('ascii')
