@@ -72,20 +72,19 @@ class User:
                     # Cancel offline event for nickname
                     # And don't send online event
                     if event_nickname in self.offline_events:
-                        User.log.info('Logoff msg to {} canceled'.format(self.cfg['name']))
                         try:
                             self.push_scheduler.cancel(self.offline_events.pop(event_nickname))
+                            User.log.info('Logoff msg to {} canceled'.format(self.cfg['name']))
                         except ValueError as err:
                             User.log.error('Error removing delayed event: ' + str(err))
-
                         return
                     title = 'Login ({})'.format(server_name)
                     self.push(title, event_nickname)
                 else:
                     # Delay sending the logoff event (30s)
                     if self.should_send_push():
-                        User.log.info(
-                            'Scheduling Logoff msg to {} ({} sec)'.format(self.cfg['name'], User.logout_delay))
+                        User.log.info('Scheduling Logoff msg to {} ({} sec delay)'
+                                      .format(self.cfg['name'], User.logout_delay))
                         event = self.push_scheduler.enter(User.logout_delay, 1, self.push, (event_name, event_nickname))
                         self.offline_events[event_nickname] = event
 

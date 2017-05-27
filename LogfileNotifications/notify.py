@@ -40,7 +40,7 @@ class Notify(object):
 
 class NotifyDebug(Notify):
     def send(self, title, message):
-        Notify.log.critical('Notify {} => Title: {}, Msg: {}'.format(self.user.cfg['name'], title, message))
+        Notify.log.critical('DEBUG-NOTIFY {} => Title: {}, Msg: {}'.format(self.user.cfg['name'], title, message))
 
 
 class NotifyPushover(Notify):
