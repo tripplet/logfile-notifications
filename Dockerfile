@@ -11,11 +11,15 @@ MAINTAINER ttobias
 COPY . script
  
 RUN apk add --update ca-certificates && \
-    apk add tzdata && \
-    apk add git --virtual .build-deps git && \
-    pip install -r script/requirements.txt && \
-    cd /script/ && git describe --long --always --tags > /script/.version && \
-    apk del .build-deps && rm -rf /script/.git
+     apk add tzdata && \
+     apk add git --virtual .build-deps && \
+     cd /script/ && \
+     git fetch --tags && \
+     echo -n $(git describe --long --always --tags) > /script/.version && \
+     echo " ($(git show -s --format=%ci --date=local | awk '{print substr($0,0,19)}'))" >> /script/.version && \
+     apk del .build-deps && \
+     rm -rf /script/.git && \
+     pip install -r requirements.txt
 
 ENTRYPOINT ["python", "/script/notifications.py"]
 CMD ["config.yaml"]
