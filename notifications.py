@@ -46,7 +46,7 @@ def main():
     m = LogfileNotifications.Monitor(config)
 
     # Set separate logging level for telegram bot (really excessive on DEBUG)
-    if 'telegram_bot_token' in config:
+    if 'telegram_bot_token' in config and 'telegram_level' in config['logging']:
         logging.getLogger("telegram.bot").setLevel(config['logging']['telegram_level'])
 
     m.loop()
