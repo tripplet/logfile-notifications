@@ -13,6 +13,7 @@ class FileWatcher(FileSystemEventHandler):
     watch_manager = Observer()
 
     def __init__(self, entry, regex, handle_newline_event):
+        FileWatcher.log.debug('() => __init__')
         self.path = os.path.abspath(entry['path'])
         self.name = entry['name']
         self.login = re.compile(regex[entry['regex']['login']])
@@ -31,10 +32,12 @@ class FileWatcher(FileSystemEventHandler):
         FileWatcher.watch_manager.schedule(self, self.watch_path, recursive=False)
 
     def on_created(self, event):
+        FileWatcher.log.debug('() => on_created')
         self.positions[event.src_path] = 0
         self.on_modified(event)
 
     def on_modified(self, event):
+        FileWatcher.log.debug('() => on_modified')
         new_lines = self.update_position(event.src_path)
         lines = new_lines.replace('\r', '').split('\n')
 
@@ -42,6 +45,7 @@ class FileWatcher(FileSystemEventHandler):
             self.handle_newline_event(line, self)
 
     def update_position(self, path):
+        FileWatcher.log.debug('() => update_position')
         if os.path.isdir(path):
             for dir_entry in os.scandir(path):
                 if dir_entry.is_file():
@@ -51,6 +55,7 @@ class FileWatcher(FileSystemEventHandler):
             return self._update_file_position(path)
 
     def _update_file_position(self, file_path):
+        FileWatcher.log.debug('() => _update_file_position')
         if file_path not in self.positions:
             self.positions[file_path] = 0
 
@@ -61,18 +66,25 @@ class FileWatcher(FileSystemEventHandler):
             f.seek(self.positions[file_path])
             try:
                 new_lines = f.read()
-            except UnicodeDecodeError as ex:
-                FileWatcher.log.info("Ignoring UnicodeDecodeError in '{}': ".format(file_path, str(ex)))
-                self.positions[file_path] = os.stat(file_path).st_size
-                return ''
+
             except Exception as ex:
                 FileWatcher.log.error("Error while reading file '{}': {}".format(file_path, str(ex)))
                 self.positions[file_path] = os.stat(file_path).st_size
                 return ''
 
-        last_n = new_lines.rfind(b'\n')
-        if last_n >= 0:
-            self.positions[file_path] += last_n + 1
+        # Split lines and decode encoding
+        try:
+            last_n = new_lines.rfind(b'\n')
+            if last_n >= 0:
+                self.positions[file_path] += last_n + 1
+            
+            new_lines = new_lines.decode('ascii')
+            FileWatcher.log.debug('New lines in logfile {}:\n{}'.format(file_path, new_lines))
+            return new_lines
+        except UnicodeDecodeError as ex:
+            FileWatcher.log.info("Ignoring UnicodeDecodeError in '{}': ".format(file_path, str(ex)))
+            self.positions[file_path] = os.stat(file_path).st_size
+            return ''
 
-        FileWatcher.log.debug('New lines in logfile {}:\n{}'.format(file_path, new_lines.decode('ascii')))
-        return new_lines.decode('ascii')
+
+
