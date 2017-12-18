@@ -1,4 +1,4 @@
 watchdog==0.8.3
 PyNMA==1.0
-python-telegram-bot==8.1.1
+python-telegram-bot==9.0.0
 PyYAML==3.12
