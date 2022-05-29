@@ -74,7 +74,7 @@ class NotificationBot(TelegramBot):
             for user in self.users:
                 user.push_sync('Broadcast (von {})'.format(sending_user), resp_update.message.text, ignore_online=True)
 
-            self.send_message(resp_update.message.chat_id, text='Erledigt', reply_markup=telegram.ReplyKeyboardHide())
+            self.send_message(resp_update.message.chat_id, text='Erledigt')
             self.set_handle_response(resp_update.message.chat_id, None)
 
         self.set_handle_response(update.message.chat_id, broadcast_response)
@@ -111,8 +111,7 @@ class NotificationBot(TelegramBot):
                     self._quiet_times[resp_update.message.text]()
 
                 self.send_message(resp_update.message.chat_id,
-                                  text='Erledigt',
-                                  reply_markup=telegram.ReplyKeyboardHide())
+                                  text='Erledigt')
                 self.set_handle_response(resp_update.message.chat_id, None)
 
             else:
@@ -133,5 +132,4 @@ class NotificationBot(TelegramBot):
                                '/settings - Einstellungen\n'
                                '/broadcast - Nachricht an alle\n'
                                '/help - Zeigt die Hilfe\n'
-                               '/cancel - Aktuelle Aktion abbrechen',
-                          reply_markup=telegram.ReplyKeyboardHide())
+                               '/cancel - Aktuelle Aktion abbrechen')
