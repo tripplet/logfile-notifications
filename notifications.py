@@ -28,7 +28,7 @@ def main():
         exit(1)
 
     with open(sys.argv[1]) as fp:
-        config = yaml.load(fp)
+        config = yaml.safe_load(fp)
 
     log_format = '%(asctime)s - [%(name)s] %(levelname)-5.5s - %(message)s'
     log_formatter = logging.Formatter(log_format)
