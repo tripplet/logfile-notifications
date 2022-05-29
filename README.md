@@ -1,7 +1,5 @@
 # Logfile Notifications
 
-[![Dependency Status](https://gemnasium.com/badges/github.com/tripplet/logfile-notifications.svg)](https://gemnasium.com/github.com/tripplet/logfile-notifications)
-
 ### Features
 
 - Supports multiple log files
